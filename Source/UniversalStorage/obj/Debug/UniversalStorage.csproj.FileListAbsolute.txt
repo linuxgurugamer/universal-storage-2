@@ -1,0 +1,12 @@
+C:\Users\DMagic\Documents\Visual Studio 2013\KSP_DEV\GameData\Firespitter\Plugins\UniversalStorage.dll
+C:\Users\DMagic\Documents\Visual Studio 2013\KSP_DEV\GameData\Firespitter\Plugins\UniversalStorage.pdb
+C:\Users\DMagic\Documents\Visual Studio 2013\Projects\Firespitter\Firespitter\obj\Debug\UniversalStorage.dll
+C:\Users\DMagic\Documents\Visual Studio 2013\Projects\Firespitter\Firespitter\obj\Debug\UniversalStorage.pdb
+C:\Users\DMagic\Documents\Visual Studio 2013\Projects\Firespitter\Firespitter\obj\Debug\UniversalStorage.csprojResolveAssemblyReference.cache
+C:\Users\DMagic\Documents\Visual Studio 2013\Projects\Firespitter\Firespitter\obj\Debug\UniversalStorage.csproj.CoreCompileInputs.cache
+C:\Users\DMagic\Documents\Visual Studio 2013\Projects\Firespitter\Output\UniversalStorage.dll
+C:\Users\DMagic\Documents\Visual Studio 2013\Projects\Firespitter\Output\UniversalStorage.pdb
+C:\Users\DMagic\Documents\Visual Studio 2013\Projects\Firespitter\UniversalStorage\obj\Debug\UniversalStorage.csprojResolveAssemblyReference.cache
+C:\Users\DMagic\Documents\Visual Studio 2013\Projects\Firespitter\UniversalStorage\obj\Debug\UniversalStorage.csproj.CoreCompileInputs.cache
+C:\Users\DMagic\Documents\Visual Studio 2013\Projects\Firespitter\UniversalStorage\obj\Debug\UniversalStorage.dll
+C:\Users\DMagic\Documents\Visual Studio 2013\Projects\Firespitter\UniversalStorage\obj\Debug\UniversalStorage.pdb
