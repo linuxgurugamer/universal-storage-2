@@ -83,6 +83,10 @@ namespace UniversalStorage
         public string SwitchID = string.Empty;
         [KSPField]
         public string AnimationControlState = string.Empty;
+        [KSPField]
+        public bool UseDoorObstructions = false;
+        [KSPField]
+        public string DoorObstructionTrigger = "DoorTrigger";
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
         //[KSPField(isPersistant = true)]
@@ -358,6 +362,22 @@ namespace UniversalStorage
                 tglEventCombined.active = false;
                 tglActionCombined.active = false;
                 tglActionCombined.guiName = "Toggle All (Disabled)";
+            }
+
+            if (state != StartState.Flying || !UseDoorObstructions)
+                return;
+
+            USdebugMessages.USStaticLog("Searching For Door Obstructors...");
+
+            var triggers = part.FindModelTransforms(DoorObstructionTrigger);
+
+            for (int i = triggers.Length - 1; i >= 0; i--)
+            {
+                GameObject obj = triggers[i].gameObject;
+
+                var trigger = triggers[i].gameObject.AddComponent<USDoorTrigger>();
+
+                trigger.Init(this);
             }
         }
 
