@@ -18,7 +18,7 @@ namespace UniversalStorage
         [KSPField]
         public bool DebugMode = false;
         [KSPField]
-        public bool DeleteUnused = false;
+        public bool DeleteUnused = true;
 
         private int[] _SwitchIndices;
         private List<List<Transform>> _Transforms;
