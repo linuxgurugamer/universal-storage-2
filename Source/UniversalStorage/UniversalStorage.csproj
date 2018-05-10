@@ -48,12 +48,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SwitchModules\USModuleSwitch.cs" />
     <Compile Include="USdebugMessages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="USAnimateGeneric.cs" />
     <Compile Include="SwitchModules\USCostSwitch.cs" />
     <Compile Include="SwitchModules\USDragSwitch.cs" />
     <Compile Include="USDecouple.cs" />
+    <Compile Include="USDoorTrigger.cs" />
     <Compile Include="USEvents.cs" />
     <Compile Include="SwitchModules\USFuelSwitch.cs" />
     <Compile Include="SwitchModules\USJettisonSwitch.cs" />
