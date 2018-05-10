@@ -47,19 +47,42 @@ namespace UniversalStorage
 			return list;
 		}
 
-		public static List<string> parseNames(string names)
+        public static List<List<string>> parseDoubleStrings(string names, char sep = ';', char secondSep = '|')
+        {
+            List<List<string>> strings = new List<List<string>>();
+
+            string[] array = names.Trim().Split(secondSep);
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                string[] secondArray = array[i].Trim().Split(sep);
+
+                List<string> values = new List<string>();
+
+                for (int j = 0; j < secondArray.Length; j++)
+                {
+                    values.Add(secondArray[j].Trim());
+                }
+
+                strings.Add(values);
+            }
+
+            return strings;
+        }
+
+		public static List<string> parseNames(string names, char sep = ';')
 		{
-			return parseNames(names, false, true, string.Empty);
+			return parseNames(names, false, true, string.Empty, sep);
 		}
 
-		public static List<string> parseNames(string names, bool replaceBackslashErrors)
+		public static List<string> parseNames(string names, bool replaceBackslashErrors, char sep = ';')
 		{
-			return parseNames(names, replaceBackslashErrors, true, string.Empty);
+			return parseNames(names, replaceBackslashErrors, true, string.Empty, sep);
 		}
 
-		public static List<string> parseNames(string names, bool replaceBackslashErrors, bool trimWhiteSpace, string prefix)
+		public static List<string> parseNames(string names, bool replaceBackslashErrors, bool trimWhiteSpace, string prefix, char sep = ';')
 		{
-			List<string> source = names.Split(';').ToList<string>();
+			List<string> source = names.Split(sep).ToList<string>();
 			for (int i = source.Count - 1; i >= 0; i--)
 			{
 				if (source[i] == string.Empty)
