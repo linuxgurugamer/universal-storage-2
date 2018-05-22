@@ -87,6 +87,16 @@ namespace UniversalStorage
         public bool UseDoorObstructions = false;
         [KSPField]
         public string DoorObstructionTrigger = "DoorTrigger";
+        [KSPField]
+        public string PrimaryDoorObstructionSource = "RaySource";
+        [KSPField]
+        public string SecondaryDoorObstructionSource = "SecondaryRaySource";
+        [KSPField]
+        public string PrimaryDoorObstructionLength = string.Empty;
+        [KSPField]
+        public string SecondaryDoorObstructionLength = string.Empty;
+        [KSPField]
+        public bool ObstructionDebugLines = false;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
         //[KSPField(isPersistant = true)]
@@ -125,7 +135,19 @@ namespace UniversalStorage
         private USDragSwitch dragModule;
 
         private int[] _SwitchIndices;
+
         private int[] _ControlStates;
+
+        private double[] _PrimaryObstructionLengths;
+        private double[] _SecondaryObstructionLengths;
+        private Transform[] _PrimaryObstructionSources;
+        private Transform[] _SecondaryObstructionSources;
+
+        private float _PrimaryObstructionLength;
+        private float _SecondaryObstructionLength;
+
+        private Shader _DebugLineShader;
+
         private EventData<int, int, Part> onUSSwitch;
 
         public override void OnAwake()
@@ -364,21 +386,37 @@ namespace UniversalStorage
                 tglActionCombined.guiName = "Toggle All (Disabled)";
             }
 
-            if (state != StartState.Flying || !UseDoorObstructions)
+            if (!UseDoorObstructions)
                 return;
 
-            USdebugMessages.USStaticLog("Searching For Door Obstructors...");
+            debug.debugMessage("Searching For Door Obstructors...");
 
-            var triggers = part.FindModelTransforms(DoorObstructionTrigger);
+            if (!String.IsNullOrEmpty(PrimaryDoorObstructionLength))
+                _PrimaryObstructionLengths = USTools.parseDoubles(PrimaryDoorObstructionLength).ToArray();
 
-            for (int i = triggers.Length - 1; i >= 0; i--)
-            {
-                GameObject obj = triggers[i].gameObject;
+            if (!String.IsNullOrEmpty(SecondaryDoorObstructionLength))
+                _SecondaryObstructionLengths = USTools.parseDoubles(SecondaryDoorObstructionLength).ToArray();
 
-                var trigger = triggers[i].gameObject.AddComponent<USDoorTrigger>();
+            if (!String.IsNullOrEmpty(PrimaryDoorObstructionSource))
+                _PrimaryObstructionSources = part.FindModelTransforms(PrimaryDoorObstructionSource);
 
-                trigger.Init(this);
-            }
+            if (!String.IsNullOrEmpty(SecondaryDoorObstructionSource))
+                _SecondaryObstructionSources = part.FindModelTransforms(SecondaryDoorObstructionSource);
+
+            _DebugLineShader = Shader.Find("Particles/Alpha Blended Premultiply");
+
+            UpdateCollisionLength();
+
+            //var triggers = part.FindModelTransforms(DoorObstructionTrigger);
+
+            //for (int i = triggers.Length - 1; i >= 0; i--)
+            //{
+            //    GameObject obj = triggers[i].gameObject;
+
+            //    var trigger = triggers[i].gameObject.AddComponent<USDoorTrigger>();
+
+            //    trigger.Init(this);
+            //}
         }
 
         private void AssignJettisonModules()
@@ -577,6 +615,8 @@ namespace UniversalStorage
 
                     UpdateEventStates();
 
+                    UpdateCollisionLength();
+
                     break;
                 }
             }
@@ -584,7 +624,7 @@ namespace UniversalStorage
 
         private void UpdateEventStates()
         {
-            if (_ControlStates == null || _ControlStates.Length < CurrentSelection + 1)
+            if (_ControlStates == null || _ControlStates.Length <= CurrentSelection)
                 return;
 
             switch(_ControlStates[CurrentSelection])
@@ -622,6 +662,24 @@ namespace UniversalStorage
                     tglActionCombined.active = true;
                     break;
             }
+        }
+
+        private void UpdateCollisionLength()
+        {
+            if (!UseDoorObstructions)
+                return;
+
+            if (_PrimaryObstructionLengths != null && _PrimaryObstructionLengths.Length > CurrentSelection)
+                _PrimaryObstructionLength = (float)_PrimaryObstructionLengths[CurrentSelection];
+
+            if (_SecondaryObstructionLengths != null && _SecondaryObstructionLengths.Length > CurrentSelection)
+                _SecondaryObstructionLength = (float)_SecondaryObstructionLengths[CurrentSelection];
+
+            if (_PrimaryObstructionSources != null)
+                DrawCollisionLines(_PrimaryObstructionSources, _PrimaryObstructionLength, Color.blue);
+
+            if (_SecondaryObstructionSources != null)
+                DrawCollisionLines(_SecondaryObstructionSources, _SecondaryObstructionLength, Color.red);
         }
 
         [KSPAction("Jettison Doors")]
@@ -703,39 +761,67 @@ namespace UniversalStorage
 			else
 			{
 				if (primaryDeployed && !oneShot || primaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED)
-				{
-					primaryDeployed = false;
-					tglActionPrimary.guiName = primaryStartEventGUIName;
-					tglEventPrimary.guiName = primaryStartEventGUIName;
+                {
+                    bool obstructed = false;
 
-					if (!string.IsNullOrEmpty(primaryToggleActionName))
-						tglActionPrimary.guiName = primaryToggleActionName;
+                    if (UseDoorObstructions)
+                    {
+                        if (PrimaryCollisionCheck())
+                        {
+                            primaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
+                            obstructed = true;
+                        }
+                    }
 
-					if (_animsPrimary != null)
-					{
-						for (int i = _animsPrimary.Length - 1; i >= 0; i--)
-							animate(_animsPrimary[i], primaryAnimationName, _animSpeed * -1f, 1);
-					}
+                    if (!obstructed)
+                    {
+                        primaryDeployed = false;
+                        tglActionPrimary.guiName = primaryStartEventGUIName;
+                        tglEventPrimary.guiName = primaryStartEventGUIName;
 
-					primaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
+                        if (!string.IsNullOrEmpty(primaryToggleActionName))
+                            tglActionPrimary.guiName = primaryToggleActionName;
+
+                        if (_animsPrimary != null)
+                        {
+                            for (int i = _animsPrimary.Length - 1; i >= 0; i--)
+                                animate(_animsPrimary[i], primaryAnimationName, _animSpeed * -1f, 1);
+                        }
+
+                        primaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
+                    }
 				}
 
 				if (secondaryDeployed && !oneShot || secondaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED)
-				{
-					secondaryDeployed = false;
-					tglActionSecondary.guiName = secondaryStartEventGUIName;
-					tglEventSecondary.guiName = secondaryStartEventGUIName;
+                {
+                    bool obstructed = false;
 
-					if (!string.IsNullOrEmpty(secondaryToggleActionName))
-						tglActionSecondary.guiName = secondaryToggleActionName;
+                    if (UseDoorObstructions)
+                    {
+                        if (SecondaryCollisionCheck())
+                        {
+                            secondaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
+                            obstructed = true;
+                        }
+                    }
 
-					if (_animsSecondary != null)
-					{
-						for (int i = _animsSecondary.Length - 1; i >= 0; i--)
-							animate(_animsSecondary[i], secondaryAnimationName, _animSpeed * -1f, 1);
-					}
+                    if (!obstructed)
+                    {
+                        secondaryDeployed = false;
+                        tglActionSecondary.guiName = secondaryStartEventGUIName;
+                        tglEventSecondary.guiName = secondaryStartEventGUIName;
 
-					secondaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
+                        if (!string.IsNullOrEmpty(secondaryToggleActionName))
+                            tglActionSecondary.guiName = secondaryToggleActionName;
+
+                        if (_animsSecondary != null)
+                        {
+                            for (int i = _animsSecondary.Length - 1; i >= 0; i--)
+                                animate(_animsSecondary[i], secondaryAnimationName, _animSpeed * -1f, 1);
+                        }
+
+                        secondaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
+                    }
 				}
 
 				onMove.Fire(1, 0);
@@ -771,8 +857,17 @@ namespace UniversalStorage
 			primaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
 
 			if (primaryDeployed)
-			{
-				primaryDeployed = false;
+            {
+                if (UseDoorObstructions)
+                {
+                    if (PrimaryCollisionCheck())
+                    {
+                        primaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
+                        return;
+                    }
+                }
+
+                primaryDeployed = false;
 				tglActionPrimary.guiName = primaryStartEventGUIName;
 				tglEventPrimary.guiName = primaryStartEventGUIName;
 
@@ -852,6 +947,15 @@ namespace UniversalStorage
 
 			if (secondaryDeployed)
 			{
+                if (UseDoorObstructions)
+                {
+                    if (SecondaryCollisionCheck())
+                    {
+                        secondaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
+                        return;
+                    }
+                }
+
 				secondaryDeployed = false;
 				tglActionSecondary.guiName = secondaryStartEventGUIName;
 				tglEventSecondary.guiName = secondaryStartEventGUIName;
@@ -907,6 +1011,111 @@ namespace UniversalStorage
 				}
 			}
 		}
+
+        private bool PrimaryCollisionCheck()
+        {
+            if (_PrimaryObstructionSources == null)
+                return false;
+
+            if (ObstructionDebugLines)
+                DrawCollisionLines(_PrimaryObstructionSources, _PrimaryObstructionLength, Color.blue);
+
+            debug.debugMessage("Testing for primary door collisions before closing...");
+
+            for (int i = _PrimaryObstructionSources.Length - 1; i >= 0; i--)
+            {
+                Transform source = _PrimaryObstructionSources[i];
+
+                Ray r = new Ray(source.position, source.forward);
+                RaycastHit hit = new RaycastHit();
+
+                if (Physics.Raycast(r, out hit, _PrimaryObstructionLength, 1 << 0))
+                {
+                    if (hit.collider != null)
+                    {
+                        if (hit.collider.attachedRigidbody != null)
+                        {
+                            Part p = Part.FromGO(hit.transform.gameObject);
+
+                            if (p != null)
+                            {
+                                ScreenMessages.PostScreenMessage("Obstruction detected in primary bay doors. Please clear objects before closing.", 4f, ScreenMessageStyle.UPPER_CENTER);
+                                debug.debugMessage(string.Format("Primary door obstruction detected; stopping animation: {0}", p.partName));
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private bool SecondaryCollisionCheck()
+        {
+            if (_SecondaryObstructionSources == null)
+                return false;
+
+            if (ObstructionDebugLines)
+                DrawCollisionLines(_SecondaryObstructionSources, _SecondaryObstructionLength, Color.red);
+
+            debug.debugMessage("Testing for secondary door collisions before closing...");
+
+            for (int i = _SecondaryObstructionSources.Length - 1; i >= 0; i--)
+            {
+                Transform source = _SecondaryObstructionSources[i];
+
+                Ray r = new Ray(source.position, source.forward);
+                RaycastHit hit = new RaycastHit();
+
+                if (Physics.Raycast(r, out hit, _SecondaryObstructionLength, 1 << 0))
+                {
+                    if (hit.collider != null)
+                    {
+                        if (hit.collider.attachedRigidbody != null)
+                        {
+                            Part p = Part.FromGO(hit.transform.gameObject);
+
+                            if (p != null)
+                            {
+                                ScreenMessages.PostScreenMessage("Obstruction detected in secondary bay doors. Please clear objects before closing.", 4f, ScreenMessageStyle.UPPER_CENTER);
+                                debug.debugMessage(string.Format("Secondary door obstruction detected; stopping animation: {0}", p.partName));
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private void DrawCollisionLines(Transform[] sources, float length, Color c)
+        {
+            if (sources == null)
+                return;
+
+            for (int i = sources.Length - 1; i >= 0; i--)
+            {
+                GameObject line = new GameObject("Debug Line");
+                line.transform.position = sources[i].position;
+                LineRenderer lr = line.AddComponent<LineRenderer>();
+                lr.material = new Material(_DebugLineShader);
+                lr.startColor = c;
+                lr.endColor = c * 0.3f;
+                lr.startWidth = 0.03f;
+                lr.endWidth = 0.01f;
+                    
+                Vector3 end = sources[i].position + (sources[i].forward * length);
+
+                //debug.debugMessage(string.Format("Debug Line: {0} Start: {1:N3} - End: {2:N3}"
+                //    , sources[i].name, sources[i].position, end));
+
+                lr.SetPosition(0, sources[i].position);
+                lr.SetPosition(1, end);
+                Destroy(line, 2f);
+            }
+        }
 
 		private void animate(Animation anim, string animationName, float speed, float time)
 		{
