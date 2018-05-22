@@ -106,7 +106,7 @@ namespace UniversalStorage
                 _Costs = USTools.parseDoubles(AddedCost).ToArray();
             }
 
-            if (_Costs.Length >= CurrentSelection)
+            if (_Costs.Length > CurrentSelection)
                 cost = (float)_Costs[CurrentSelection];
 
             fuel.setMeshCost(cost);            

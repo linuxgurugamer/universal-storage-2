@@ -97,7 +97,7 @@ namespace UniversalStorage
                 if (_TargetModule.Fields[_Fields[i]] == null)
                     continue;
 
-                if (_Values.Count > i && _Values[i].Count > i)
+                if (_Values.Count > i && _Values[i].Count > CurrentSelection)
                 {
                     var field = _TargetModule.Fields[_Fields[i]];
 

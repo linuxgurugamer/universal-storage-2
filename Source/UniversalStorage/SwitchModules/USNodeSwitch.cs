@@ -74,7 +74,7 @@ namespace UniversalStorage
 
         private void UpdateAttachNodes()
         {
-            if (_Nodes == null || _Nodes.Count < CurrentSelection + 1)
+            if (_Nodes == null || _Nodes.Count <= CurrentSelection)
                 return;
 
             debug.debugMessage("Disabling Nodes");

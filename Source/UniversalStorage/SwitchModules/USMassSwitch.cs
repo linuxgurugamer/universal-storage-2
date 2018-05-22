@@ -107,7 +107,7 @@ namespace UniversalStorage
                 _Masses = USTools.parseDoubles(AddedMass).ToArray();
             }
 
-            if (_Masses.Length >= CurrentSelection)
+            if (_Masses.Length > CurrentSelection)
                 mass = (float)_Masses[CurrentSelection];
 
             fuel.setMeshMass(mass);

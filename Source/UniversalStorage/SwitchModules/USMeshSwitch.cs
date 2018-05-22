@@ -111,8 +111,9 @@ namespace UniversalStorage
         private void UpdateMesh()
         {
             debug.debugMessage(string.Format("Updating Mesh - Selection: {0} - Count: {1}", CurrentSelection, _Transforms.Count));
-            if (_Transforms == null || _Transforms.Count < CurrentSelection + 1)
+            if (_Transforms == null || _Transforms.Count <= CurrentSelection)
                 return;
+
             debug.debugMessage("Turning off meshes");
             for (int i = _Transforms.Count - 1; i >= 0; i--)
             {
