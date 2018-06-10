@@ -31,11 +31,7 @@ namespace UniversalStorage
         {
             base.OnStart(state);
 
-            debug = new USdebugMessages(DebugMode, "US Reaction");
-
-            _wheelTransforms = part.FindModelTransforms(WheelTransformName);
-
-            _reactionWheel = part.FindModuleImplementing<ModuleReactionWheel>();
+            //debug = new USdebugMessages(DebugMode, "US Reaction");
 
             Fields["MaxRotation"].guiActive = DebugMode;
             Fields["MaxRotation"].guiActiveEditor= DebugMode;
@@ -43,6 +39,15 @@ namespace UniversalStorage
             Fields["WheelSpeed"].guiActiveEditor = DebugMode;
             Fields["WheelAcceleration"].guiActive = DebugMode;
             Fields["WheelAcceleration"].guiActiveEditor = DebugMode;
+        }
+
+        public override void OnStartFinished(StartState state)
+        {
+            base.OnStartFinished(state);
+
+            _wheelTransforms = part.FindModelTransforms(WheelTransformName);
+
+            _reactionWheel = part.FindModuleImplementing<ModuleReactionWheel>();
         }
 
         private void Update()
@@ -59,6 +64,9 @@ namespace UniversalStorage
 
             for (int i = _wheelTransforms.Length - 1; i >= 0; i--)
             {
+                if (_wheelTransforms[i] == null || _wheelTransforms[i].gameObject == null)
+                    continue;
+
                 if (_wheelTransforms[i].gameObject.activeInHierarchy)
                     _wheelTransforms[i].Rotate(Vector3.up, _currentSpeed);
             }
