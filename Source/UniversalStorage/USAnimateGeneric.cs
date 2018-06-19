@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections;
 using UnityEngine;
 
 namespace UniversalStorage
@@ -84,6 +83,10 @@ namespace UniversalStorage
         [KSPField]
         public string AnimationControlState = string.Empty;
         [KSPField]
+        public string CargoBayCenter = string.Empty;
+        [KSPField]
+        public string CargoBayRadius = string.Empty;
+        [KSPField]
         public bool UseDoorObstructions = false;
         [KSPField]
         public string DoorObstructionTrigger = "DoorTrigger";
@@ -134,9 +137,17 @@ namespace UniversalStorage
         private USJettisonSwitch[] jettisonModules;
         private USDragSwitch dragModule;
 
+        private ModuleCargoBay cargoModule;
+
+        private bool debugDraw;
+        private float debugDrawTimer = 0;
+
         private int[] _SwitchIndices;
 
         private int[] _ControlStates;
+
+        private Vector3[] _CargoCenter;
+        private float[] _CargoRadii;
 
         private double[] _PrimaryObstructionLengths;
         private double[] _SecondaryObstructionLengths;
@@ -184,15 +195,21 @@ namespace UniversalStorage
         }
 
         public override void OnStart(PartModule.StartState state)
-		{
-			base.OnStart(state);
-			debug = new USdebugMessages(DebugMode, "USAnimateGeneric");
+        {
+            base.OnStart(state);
+            debug = new USdebugMessages(DebugMode, "USAnimateGeneric");
 
             if (!String.IsNullOrEmpty(SwitchID))
                 _SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
 
             if (!String.IsNullOrEmpty(AnimationControlState))
                 _ControlStates = USTools.parseIntegers(AnimationControlState).ToArray();
+
+            if (!String.IsNullOrEmpty(CargoBayCenter))
+                _CargoCenter = USTools.parseVectors(CargoBayCenter).ToArray();
+
+            if (!String.IsNullOrEmpty(CargoBayRadius))
+                _CargoRadii = USTools.parseSingles(CargoBayRadius).ToArray();
 
             if (jettisonAvailable && !string.IsNullOrEmpty(jettisonIndices))
             {
@@ -204,7 +221,7 @@ namespace UniversalStorage
                 jettEvent.guiActive = !jettisonDeployedOnly && !jettisonStowedOnly;
             }
 
-			_animSpeed = customAnimationSpeed;			
+            _animSpeed = customAnimationSpeed;
         }
 
         public override void OnStartFinished(StartState state)
@@ -386,6 +403,12 @@ namespace UniversalStorage
                 tglActionCombined.guiName = "Toggle All (Disabled)";
             }
 
+            cargoModule = part.FindModuleImplementing<ModuleCargoBay>();
+
+            UpdateEventStates();
+
+            UpdateCargoModule();
+
             if (!UseDoorObstructions)
                 return;
 
@@ -518,6 +541,7 @@ namespace UniversalStorage
 								SetDragCubes(1 - _primaryAnimTime);
 								anim.Stop(primaryAnimationName);
 								onStop.Fire(_primaryAnimTime);
+                                OnDebugSphere();
 							}
 							else
 							{
@@ -568,7 +592,8 @@ namespace UniversalStorage
 								anim[secondaryAnimationName].normalizedTime = _secondaryAnimTime;
 								anim.Stop(secondaryAnimationName);
 								onStop.Fire(_secondaryAnimTime);
-							}
+                                OnDebugSphere();
+                            }
 							else
 							{
 								//debug.debugMessage(string.Format("Animation {0} playing - Time: {1:F2}", secondaryAnimationName, anim[secondaryAnimationName].normalizedTime));
@@ -594,6 +619,37 @@ namespace UniversalStorage
 			}
 		}
 
+        private void OnGUI()
+        {
+            if (!debugDraw)
+                return;
+
+            if (debugDrawTimer < 10)
+            {
+                debugDrawTimer += Time.deltaTime;
+
+                Vector3 center = part.partTransform.TransformPoint(cargoModule.lookupCenter);
+
+                USTools.DrawSphere(center, Color.green, cargoModule.lookupRadius);
+            }
+            else
+            {
+                debugDraw = false;
+
+                debugDrawTimer = 0;
+            }
+        }
+
+        private void OnDebugSphere()
+        {
+            if (DebugMode && cargoModule != null)
+            {
+                debug.debugMessage("Draw Debug Cargo Sphere");
+                debugDraw = true;
+                debugDrawTimer = 0;
+            }
+        }
+        
         private void onSwitch(int index, int selection, Part p)
         {
             if (p != part)
@@ -611,11 +667,15 @@ namespace UniversalStorage
             {
                 if (_SwitchIndices[i] == index)
                 {
+                    debug.debugMessage(string.Format("On Switch - Index: {0}", selection));
+
                     CurrentSelection = selection;
 
                     UpdateEventStates();
 
                     UpdateCollisionLength();
+
+                    UpdateCargoModule();
 
                     break;
                 }
@@ -680,6 +740,28 @@ namespace UniversalStorage
 
             if (_SecondaryObstructionSources != null)
                 DrawCollisionLines(_SecondaryObstructionSources, _SecondaryObstructionLength, Color.red);
+        }
+
+        private void UpdateCargoModule()
+        {
+            if (cargoModule == null)
+                return;
+
+            debug.debugMessage("Update Cargo Bay...");
+
+            if (_CargoCenter.Length > CurrentSelection)
+            {
+                cargoModule.SetLookupCenter(_CargoCenter[CurrentSelection]);
+
+                debug.debugMessage(string.Format("Set look up center: {0} - New {1}", _CargoCenter[CurrentSelection], cargoModule.lookupCenter));
+            }
+
+            if (_CargoRadii.Length > CurrentSelection)
+            {
+                cargoModule.SetLookupRadius(_CargoRadii[CurrentSelection]);
+
+                debug.debugMessage(string.Format("Set look up radius: {0} - New {1}", _CargoRadii[CurrentSelection], cargoModule.lookupRadius));
+            }
         }
 
         [KSPAction("Jettison Doors")]
