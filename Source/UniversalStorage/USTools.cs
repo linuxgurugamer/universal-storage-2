@@ -7,8 +7,21 @@ using System.Reflection;
 namespace UniversalStorage
 {
 	public static class USTools
-	{
-		public static List<int> parseIntegers(string stringOfInts, char sep = ';')
+    {
+        private static Material _material;
+
+        private static int glDepth = 0;
+
+        private static Material material
+        {
+            get
+            {
+                if (_material == null) _material = new Material(Shader.Find("Particles/Alpha Blended"));
+                return _material;
+            }
+        }
+
+        public static List<int> parseIntegers(string stringOfInts, char sep = ';')
 		{
 			List<int> newIntList = new List<int>();
 			string[] valueArray = stringOfInts.Split(sep);
@@ -41,11 +54,57 @@ namespace UniversalStorage
 				}
 				else
 				{
-                    USdebugMessages.USStaticLog("Error parsing: Invalid float - {0}", array[i]);
+                    USdebugMessages.USStaticLog("Error parsing: Invalid double - {0}", array[i]);
 				}
 			}
 			return list;
 		}
+
+        public static List<float> parseSingles(string stringOfSingles, char sep = ';')
+        {
+            List<float> list = new List<float>();
+            string[] array = stringOfSingles.Trim().Split(sep);
+            for (int i = 0; i < array.Length; i++)
+            {
+                float item = 0f;
+                if (float.TryParse(array[i].Trim(), out item))
+                {
+                    list.Add(item);
+                }
+                else
+                {
+                    USdebugMessages.USStaticLog("Error parsing: Invalid float - {0}", array[i]);
+                }
+            }
+            return list;
+        }
+
+        public static List<Vector3> parseVectors(string stringOfVectors, char sep = ';')
+        {
+            List<Vector3> list = new List<Vector3>();
+            string[] array = stringOfVectors.Trim().Split(sep);
+            for (int i = 0; i < array.Length; i++)
+            {
+                Vector3 vec = Vector3.zero;
+                string[] floats = array[i].Trim().Split(',');
+                for (int j = 0; j < floats.Length; j++)
+                {
+                    float item = 0f;
+                    if (float.TryParse(floats[j].Trim(), out item))
+                    {
+                        if (j < 3)
+                            vec[j] = item;
+                    }
+                    else
+                    {
+                        USdebugMessages.USStaticLog("Error parsing: Invalid float for Vector3 - {0}", array[i]);
+                    }
+                }
+
+                list.Add(vec);
+            }
+            return list;
+        }
 
         public static List<List<string>> parseDoubleStrings(string names, char sep = ';', char secondSep = '|')
         {
@@ -230,6 +289,83 @@ namespace UniversalStorage
             }
 
             return nodeBatches;
+        }
+
+        private static void GLStart()
+        {
+            if (glDepth == 0)
+            {
+                GL.PushMatrix();
+                material.SetPass(0);
+                GL.LoadPixelMatrix();
+                GL.Begin(GL.LINES);
+            }
+            glDepth++;
+        }
+
+        private static void GLEnd()
+        {
+            glDepth--;
+
+            if (glDepth == 0)
+            {
+                GL.End();
+                GL.PopMatrix();
+            }
+        }
+
+        private static Camera GetActiveCam()
+        {
+            Camera cam;
+            if (HighLogic.LoadedSceneIsEditor)
+                cam = EditorLogic.fetch.editorCamera;
+            else if (HighLogic.LoadedSceneIsFlight)
+                cam = MapView.MapIsEnabled ? PlanetariumCamera.Camera : FlightCamera.fetch.mainCamera;
+            else
+                cam = Camera.main;
+            return cam;
+        }
+
+        private static void DrawLine(Vector3 origin, Vector3 destination, Color color)
+        {
+            Camera cam = GetActiveCam();
+
+            Vector3 screenPoint1 = cam.WorldToScreenPoint(origin);
+            Vector3 screenPoint2 = cam.WorldToScreenPoint(destination);
+
+            GL.Color(color);
+            GL.Vertex3(screenPoint1.x, screenPoint1.y, 0);
+            GL.Vertex3(screenPoint2.x, screenPoint2.y, 0);
+        }
+
+        public static void DrawSphere(Vector3 position, Color color, float radius = 1.0f)
+        {
+            int segments = 36;
+            float step = Mathf.Deg2Rad * 360f / segments;
+
+            Vector3 x = new Vector3(position.x, position.y, position.z + radius);
+            Vector3 y = new Vector3(position.x + radius, position.y, position.z);
+            Vector3 z = new Vector3(position.x + radius, position.y, position.z);
+
+            GLStart();
+            GL.Color(color);
+
+            for (int i = 1; i <= segments; i++)
+            {
+                float angle = step * i;
+                Vector3 nextX = new Vector3(position.x, position.y + radius * Mathf.Sin(angle), position.z + radius * Mathf.Cos(angle));
+                Vector3 nextY = new Vector3(position.x + radius * Mathf.Cos(angle), position.y, position.z + radius * Mathf.Sin(angle));
+                Vector3 nextZ = new Vector3(position.x + radius * Mathf.Cos(angle), position.y + radius * Mathf.Sin(angle), position.z);
+
+                DrawLine(x, nextX, color);
+                DrawLine(y, nextY, color);
+                DrawLine(z, nextZ, color);
+
+                x = nextX;
+                y = nextY;
+                z = nextZ;
+            }
+            GLEnd();
         }
 
         // Code from https://github.com/Swamp-Ig/KSPAPIExtensions/blob/master/Source/Utils/KSPUtils.cs#L62
