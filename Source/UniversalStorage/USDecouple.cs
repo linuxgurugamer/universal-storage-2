@@ -54,6 +54,29 @@ namespace UniversalStorage
         {
             base.OnStart(state);
             debug = new USdebugMessages(DebugMode, "USDecouple");
+            
+            if (GameSettings.ADVANCED_TWEAKABLES)
+                stagingEvent.active = false;
+            else
+                stagingEvent.active = StageOption;
+
+            stagingEnabled = StageOption && Staged;
+
+            decoupleEvent.guiActiveUnfocused = DecoupleEVA;
+            decoupleEvent.guiName = DecoupleEventName;
+            decoupleEvent.active = !Decoupled;
+            
+            decoupleAction.guiName = DecoupleActionName;
+            decoupleAction.active = !Decoupled;
+
+            Fields["DecoupleTime"].guiActive = DebugMode;
+            Fields["DecoupleTime"].guiActiveEditor = DebugMode;
+        }
+
+        public override void OnStartFinished(StartState state)
+        {
+            base.OnStartFinished(state);
+
             _decoupler = part.FindModuleImplementing<ModuleDecouple>();
 
             if (_decoupler != null)
@@ -64,26 +87,9 @@ namespace UniversalStorage
                 _decoupler.Actions["DecoupleAction"].active = false;
             }
 
-            if (GameSettings.ADVANCED_TWEAKABLES)
-                stagingEvent.active = false;
-            else
-                stagingEvent.active = StageOption;
-
-            stagingEnabled = StageOption && Staged;
-
-            part.UpdateStageability(true, true);
-            
             _decoupleAnimation = part.FindModelAnimators(DecoupleAnimationName);
             
-            decoupleEvent.guiActiveUnfocused = DecoupleEVA;
-            decoupleEvent.guiName = DecoupleEventName;
-            decoupleEvent.active = !Decoupled;
-            
-            decoupleAction.guiName = DecoupleActionName;
-            decoupleAction.active = !Decoupled;
-
-            Fields["DecoupleTime"].guiActive = DebugMode;
-            Fields["DecoupleTime"].guiActiveEditor = DebugMode;
+            part.UpdateStageability(true, true);            
         }
 
         private void FixedUpdate()
