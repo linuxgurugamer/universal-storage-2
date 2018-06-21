@@ -18,13 +18,21 @@ namespace UniversalStorage
 		public string primaryEndEventGUIName = "Retract Primary Bays";
 		[KSPField]
 		public string primaryToggleActionName = "Toggle Primary Bays";
-		[KSPField]
+        [KSPField]
+        public string lockPrimaryDoorName = "Lock Primary Bays";
+        [KSPField]
+        public string unlockPrimaryDoorName = "Unlock Primary Bays";
+        [KSPField]
 		public string secondaryStartEventGUIName = "Deploy Secondary Bays";
 		[KSPField]
 		public string secondaryEndEventGUIName = "Retract Secondary Bays";
 		[KSPField]
 		public string secondaryToggleActionName = "Toggle Secondary Bays";
-		[KSPField]
+        [KSPField]
+        public string lockSecondaryDoorName = "Lock Secondary Bays";
+        [KSPField]
+        public string unlockSecondaryDoorName = "Unlock Secondary Bays";
+        [KSPField]
 		public string combinedStartEventGUIName = "Deploy All Bays";
 		[KSPField]
 		public string combinedEndEventGUIName = "Retract All Bays";
@@ -45,25 +53,31 @@ namespace UniversalStorage
 		[KSPField]
 		public bool primaryAvailableInVessel = true;
 		[KSPField]
-		public bool primaryAvailableInEditor = false;
+		public bool primaryAvailableInEditor = true;
 		[KSPField]
 		public bool primaryActionAvailable = true;
 		[KSPField]
-		public bool secondaryAvailableInEVA = true;
+		public bool secondaryAvailableInEVA = false;
 		[KSPField]
-		public bool secondaryAvailableInVessel = true;
+		public bool secondaryAvailableInVessel = false;
 		[KSPField]
 		public bool secondaryAvailableInEditor = false;
 		[KSPField]
-		public bool secondaryActionAvailable = true;
+		public bool secondaryActionAvailable = false;
 		[KSPField]
 		public bool combinedAvailableInEVA = false;
 		[KSPField]
-		public bool combinedAvailableInVessel = true;
+		public bool combinedAvailableInVessel = false;
 		[KSPField]
-		public bool combinedAvailableInEditor = true;
+		public bool combinedAvailableInEditor = false;
 		[KSPField]
-		public bool combinedActionAvailable = true;
+		public bool combinedActionAvailable = false;
+        [KSPField]
+        public bool allowDoorLock = true;
+        [KSPField(isPersistant = true)]
+        public bool lockPrimaryDoors = false;
+        [KSPField(isPersistant = true)]
+        public bool lockSecondaryDoors = false;
         [KSPField]
         public bool jettisonAvailable = false;
         [KSPField]
@@ -101,7 +115,7 @@ namespace UniversalStorage
         [KSPField]
         public bool ObstructionDebugLines = false;
         [KSPField(isPersistant = true)]
-        public int CurrentSelection = 0;
+        public int CurrentSelection = -1;
         //[KSPField(isPersistant = true)]
 		public ModuleAnimateGeneric.animationStates primaryAnimationState;
 		//[KSPField(isPersistant = true)]
@@ -122,6 +136,9 @@ namespace UniversalStorage
 
 		private BaseEvent tglEventCombined;
 		private BaseAction tglActionCombined;
+
+        private BaseEvent lockEventPrimary;
+        private BaseEvent lockEventSecondary;
 
         private BaseEvent jettEvent;
         private BaseAction jettAction;
@@ -180,6 +197,12 @@ namespace UniversalStorage
 			tglEventCombined.active = false;
 			tglActionCombined.active = false;
 
+            lockEventPrimary = Events["lockPrimaryDoorsEvent"];
+            lockEventPrimary.active = allowDoorLock;
+
+            lockEventSecondary = Events["lockSecondaryDoorsEvent"];
+            lockEventSecondary.active = allowDoorLock;
+
             jettEvent = Events["jettisonEvent"];
             jettAction = Actions["jettisonAction"];
             jettEvent.active = false;
@@ -187,11 +210,6 @@ namespace UniversalStorage
 
 			onStop = new EventData<float>(string.Format("{0}_{1}_onStop", part.partName, part.flightID));
 			onMove = new EventData<float, float>(string.Format("{0}_{1}_onMove", part.partName, part.flightID));
-
-            onUSSwitch = GameEvents.FindEvent<EventData<int, int, Part>>("onUSSwitch");
-
-            if (onUSSwitch != null)
-                onUSSwitch.Add(onSwitch);
         }
 
         public override void OnStart(PartModule.StartState state)
@@ -200,7 +218,14 @@ namespace UniversalStorage
             debug = new USdebugMessages(DebugMode, "USAnimateGeneric");
 
             if (!String.IsNullOrEmpty(SwitchID))
+            {
                 _SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
+
+                onUSSwitch = GameEvents.FindEvent<EventData<int, int, Part>>("onUSSwitch");
+
+                if (onUSSwitch != null)
+                    onUSSwitch.Add(onSwitch);
+            }
 
             if (!String.IsNullOrEmpty(AnimationControlState))
                 _ControlStates = USTools.parseIntegers(AnimationControlState).ToArray();
@@ -243,8 +268,10 @@ namespace UniversalStorage
                 tglEventPrimary.guiActive = primaryAvailableInVessel;
                 tglEventPrimary.guiActiveEditor = primaryAvailableInEditor;
                 tglEventPrimary.unfocusedRange = EVArange;
-                tglEventPrimary.active = true;
-                tglActionPrimary.active = primaryActionAvailable;
+                tglEventPrimary.active = !(allowDoorLock && lockPrimaryDoors);
+                tglActionPrimary.active = primaryActionAvailable && !(allowDoorLock && lockPrimaryDoors);
+
+                lockEventPrimary.guiName = lockPrimaryDoors ? unlockPrimaryDoorName : lockPrimaryDoorName;
 
                 if (primaryDeployed)
                 {
@@ -308,6 +335,7 @@ namespace UniversalStorage
                 tglEventPrimary.active = false;
                 tglActionPrimary.guiName = "Toggle Secondary (Disabled)";
                 tglActionPrimary.active = false;
+                lockEventPrimary.active = false;
             }
 
             if (_animsSecondary != null && _animsSecondary.Length > 0)
@@ -316,8 +344,10 @@ namespace UniversalStorage
                 tglEventSecondary.guiActive = secondaryAvailableInVessel;
                 tglEventSecondary.guiActiveEditor = secondaryAvailableInEditor;
                 tglEventSecondary.unfocusedRange = EVArange;
-                tglEventSecondary.active = true;
-                tglActionSecondary.active = secondaryActionAvailable;
+                tglEventSecondary.active = !(allowDoorLock && lockSecondaryDoors);
+                tglActionSecondary.active = secondaryActionAvailable && !(allowDoorLock && lockSecondaryDoors);
+
+                lockEventSecondary.guiName = lockSecondaryDoors ? unlockSecondaryDoorName : lockSecondaryDoorName;
 
                 if (secondaryDeployed)
                 {
@@ -368,16 +398,17 @@ namespace UniversalStorage
                 tglEventSecondary.active = false;
                 tglActionSecondary.guiName = "Toggle Secondary (Disabled)";
                 tglActionSecondary.active = false;
+                lockEventSecondary.active = false;
             }
 
             if ((_animsPrimary != null && _animsPrimary.Length > 0) && (_animsSecondary != null && _animsSecondary.Length > 0))
             {
-                tglEventCombined.active = true;
+                tglEventCombined.active = !(allowDoorLock && (lockSecondaryDoors || lockPrimaryDoors));
                 tglEventCombined.guiActive = combinedAvailableInVessel;
                 tglEventCombined.guiActiveEditor = combinedAvailableInEditor;
                 tglEventCombined.guiActiveUnfocused = combinedAvailableInEVA;
                 tglEventCombined.unfocusedRange = EVArange;
-                tglActionCombined.active = combinedActionAvailable;
+                tglActionCombined.active = combinedActionAvailable && !(allowDoorLock && (lockSecondaryDoors || lockPrimaryDoors));
 
                 if (combinedDeployed || (primaryDeployed && secondaryDeployed))
                 {
@@ -405,9 +436,12 @@ namespace UniversalStorage
 
             cargoModule = part.FindModuleImplementing<ModuleCargoBay>();
 
-            UpdateEventStates();
+            if (CurrentSelection >= 0)
+            {
+                UpdateEventStates();
 
-            UpdateCargoModule();
+                UpdateCargoModule();
+            }
 
             if (!UseDoorObstructions)
                 return;
@@ -428,7 +462,8 @@ namespace UniversalStorage
 
             _DebugLineShader = Shader.Find("Particles/Alpha Blended Premultiply");
 
-            UpdateCollisionLength();
+            if (CurrentSelection > 0)
+                UpdateCollisionLength();
 
             //var triggers = part.FindModelTransforms(DoorObstructionTrigger);
 
@@ -696,30 +731,38 @@ namespace UniversalStorage
                     tglActionSecondary.active = false;
                     tglEventCombined.active = false;
                     tglActionCombined.active = false;
+                    lockEventPrimary.active = false;
+                    lockEventSecondary.active = false;
                     break;
                 case 1:
-                    tglEventPrimary.active = true;
-                    tglActionPrimary.active = true;
+                    tglEventPrimary.active = !(allowDoorLock && lockPrimaryDoors) && (primaryAvailableInVessel || primaryAvailableInEVA || primaryAvailableInEditor);
+                    tglActionPrimary.active = !(allowDoorLock && lockPrimaryDoors) && primaryActionAvailable;
                     tglEventSecondary.active = false;
                     tglActionSecondary.active = false;
                     tglEventCombined.active = false;
                     tglActionCombined.active = false;
+                    lockEventPrimary.active = allowDoorLock;
+                    lockEventSecondary.active = false;
                     break;
                 case 2:
                     tglEventPrimary.active = false;
                     tglActionPrimary.active = false;
-                    tglEventSecondary.active = true;
-                    tglActionSecondary.active = true;
+                    tglEventSecondary.active = !(allowDoorLock && lockSecondaryDoors) && (secondaryAvailableInVessel || secondaryAvailableInEVA|| secondaryAvailableInEditor);
+                    tglActionSecondary.active = !(allowDoorLock && lockSecondaryDoors) && secondaryActionAvailable;
                     tglEventCombined.active = false;
                     tglActionCombined.active = false;
+                    lockEventPrimary.active = false;
+                    lockEventSecondary.active = allowDoorLock;
                     break;
                 case 3:
-                    tglEventPrimary.active = true;
-                    tglActionPrimary.active = true;
-                    tglEventSecondary.active = true;
-                    tglActionSecondary.active = true;
-                    tglEventCombined.active = true;
-                    tglActionCombined.active = true;
+                    tglEventPrimary.active = !(allowDoorLock && lockPrimaryDoors) && (primaryAvailableInVessel || primaryAvailableInEVA || primaryAvailableInEditor);
+                    tglActionPrimary.active = !(allowDoorLock && lockPrimaryDoors) && primaryActionAvailable;
+                    tglEventSecondary.active = !(allowDoorLock && lockSecondaryDoors) && (secondaryAvailableInVessel || secondaryAvailableInEVA || secondaryAvailableInEditor);
+                    tglActionSecondary.active = !(allowDoorLock && lockSecondaryDoors) && secondaryActionAvailable;
+                    tglEventCombined.active = !(allowDoorLock && (lockPrimaryDoors || lockSecondaryDoors)) && (combinedAvailableInVessel || combinedAvailableInEVA || combinedAvailableInEditor);
+                    tglActionCombined.active = !(allowDoorLock && (lockPrimaryDoors || lockSecondaryDoors)) && combinedActionAvailable;
+                    lockEventPrimary.active = allowDoorLock;
+                    lockEventSecondary.active = allowDoorLock;
                     break;
             }
         }
@@ -744,7 +787,7 @@ namespace UniversalStorage
 
         private void UpdateCargoModule()
         {
-            if (cargoModule == null)
+            if (cargoModule == null || _CargoCenter == null || _CargoRadii == null)
                 return;
 
             debug.debugMessage("Update Cargo Bay...");
@@ -782,7 +825,45 @@ namespace UniversalStorage
             jettAction.active = false;
         }
 
-		[KSPAction("Toggle All Bays")]
+        [KSPEvent(name = "lockPrimaryDoorsEvent", guiName = "Lock Primary Bays", guiActive = false, guiActiveUnfocused = false, guiActiveEditor = true, active = false)]
+        public void lockPrimaryDoorsEvent()
+        {
+            if (!allowDoorLock)
+                return;
+
+            lockPrimaryDoors = !lockPrimaryDoors;
+
+            lockEventPrimary.guiName = lockPrimaryDoors ? unlockPrimaryDoorName : lockPrimaryDoorName;
+
+            tglEventPrimary.active = !lockPrimaryDoors && (primaryAvailableInVessel || primaryAvailableInEVA || primaryAvailableInEditor);
+
+            tglActionPrimary.active = !lockPrimaryDoors && primaryActionAvailable;
+
+            tglEventCombined.active = !lockPrimaryDoors && !lockSecondaryDoors && (combinedAvailableInVessel || combinedAvailableInEVA || combinedAvailableInEditor);
+
+            tglActionCombined.active = !lockPrimaryDoors && !lockSecondaryDoors && combinedActionAvailable;
+        }
+
+        [KSPEvent(name = "lockSecondaryDoorsEvent", guiName = "Lock Secondary Bays", guiActive = false, guiActiveUnfocused = false, guiActiveEditor = true, active = false)]
+        public void lockSecondaryDoorsEvent()
+        {
+            if (!allowDoorLock)
+                return;
+
+            lockSecondaryDoors = !lockSecondaryDoors;
+
+            lockEventSecondary.guiName = lockSecondaryDoors ? unlockSecondaryDoorName : lockSecondaryDoorName;
+
+            tglEventSecondary.active = !lockSecondaryDoors && (secondaryAvailableInVessel || secondaryAvailableInEVA || secondaryAvailableInEditor);
+
+            tglActionSecondary.active = !lockSecondaryDoors && secondaryActionAvailable;
+
+            tglEventCombined.active = !lockPrimaryDoors && !lockSecondaryDoors && (combinedAvailableInVessel || combinedAvailableInEVA || combinedAvailableInEditor);
+
+            tglActionCombined.active = !lockPrimaryDoors && !lockSecondaryDoors && combinedActionAvailable;
+        }
+
+        [KSPAction("Toggle All Bays")]
 		public void toggleActionCombined(KSPActionParam param)
 		{
 			if (combinedAvailableInVessel)
