@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 using System.Text;
 
 namespace UniversalStorage
@@ -25,6 +25,8 @@ namespace UniversalStorage
         public bool FuelSwitchModeOne = false;
         [KSPField]
         public bool FuelSwitchModeTwo = false;
+        [KSPField]
+        public bool DebugDragCube = true;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
         [KSPField(guiActiveEditor = true, guiName = "Current Variant")]
@@ -40,6 +42,8 @@ namespace UniversalStorage
 
             Events["nextObjectEvent"].guiName = ButtonName;
             Events["previousObjectEvent"].guiName = PreviousButtonName;
+
+            Events["RenderDragCube"].active = DebugDragCube;
 
             if (!ShowPreviousButton)
                 Events["previousObjectEvent"].guiActiveEditor = false;
@@ -159,5 +163,38 @@ namespace UniversalStorage
             GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
+        [KSPEvent(name = "RenderDragCube", guiName = "Render Drag Cube", active = false, guiActive = true, guiActiveEditor = true)]
+        public void RenderDragCube()
+        {
+            DragCube cube = DragCubeSystem.Instance.RenderProceduralDragCube(part);
+
+            PrintCube(cube.Area, cube.Drag, cube.Depth, cube.Center, cube.Size);
+        }
+
+        private void PrintCube(float[] area, float[] drag, float[] depth, Vector3 center, Vector3 bounds)
+        {
+            List<string> cubeStrings = new List<string>();
+
+            cubeStrings.Add(CurrentSelection.ToString());
+
+            for (int i = 0; i < 6; i++)
+            {
+                cubeStrings.Add(string.Format("{0:F4},{1:F4},{2:F4}", area[i], drag[i], depth[i]));
+            }
+
+            cubeStrings.Add(string.Format("{0:F4},{1:F4},{2:F4}", center.x, center.y, center.z));
+            
+            cubeStrings.Add(string.Format("{0:F4},{1:F4},{2:F4}", bounds.x, bounds.y, bounds.z));
+
+            StringBuilder sb = StringBuilderCache.Acquire(256);
+
+            for (int i = 0; i < 9; i++)
+            {
+                sb.Append(cubeStrings[i]);
+                sb.Append(", ");
+            }
+
+            USdebugMessages.USStaticLog(sb.ToStringAndRelease());
+        }
     }
 }
