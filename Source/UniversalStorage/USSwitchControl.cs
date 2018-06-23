@@ -191,7 +191,8 @@ namespace UniversalStorage
             for (int i = 0; i < 9; i++)
             {
                 sb.Append(cubeStrings[i]);
-                sb.Append(", ");
+                if (i < 8)
+                    sb.Append(", ");
             }
 
             USdebugMessages.USStaticLog(sb.ToStringAndRelease());
