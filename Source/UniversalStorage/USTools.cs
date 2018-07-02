@@ -8,6 +8,13 @@ namespace UniversalStorage
 {
 	public static class USTools
     {
+        private static bool _ksp14;
+
+        public static bool KSP14
+        {
+            get { return _ksp14; }
+        }
+
         private static Material _material;
 
         private static int glDepth = 0;
@@ -19,6 +26,11 @@ namespace UniversalStorage
                 if (_material == null) _material = new Material(Shader.Find("Particles/Alpha Blended"));
                 return _material;
             }
+        }
+
+        public static void KSPVersionCheck()
+        {
+            _ksp14 = true;
         }
 
         public static List<int> parseIntegers(string stringOfInts, char sep = ';')
@@ -289,6 +301,29 @@ namespace UniversalStorage
             }
 
             return nodeBatches;
+        }
+
+        public static List<AttachNode> parseAttachNodes(string nodes, Part part)
+        {
+            List<AttachNode> attachNodes = new List<AttachNode>();
+
+            string[] nodeNames = nodes.Split(';');
+
+            for (int i = 0; i < nodeNames.Length; i++)
+            {
+                for (int j = part.attachNodes.Count - 1; j >= 0; j--)
+                {
+                    if (part.attachNodes[j].id != nodeNames[i])
+                        continue;
+
+                    USdebugMessages.USStaticLog("Parse Attach Node: {0}", nodeNames[i]);
+
+                    attachNodes.Add(part.attachNodes[j]);
+                    break;
+                }
+            }
+
+            return attachNodes;
         }
 
         private static void GLStart()
