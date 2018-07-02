@@ -1,6 +1,6 @@
 ﻿
 using System;
-using System.Collections;
+using KSP.Localization;
 
 namespace UniversalStorage
 {
@@ -12,6 +12,8 @@ namespace UniversalStorage
         public string AddedMass = string.Empty;
         [KSPField]
         public bool DisplayCurrentModeMass = false;
+        [KSPField]
+        public string DisplayMassName = "Part Mass";
         [KSPField(guiActive = false, guiActiveEditor = true, guiName = "Part Mass")]
         public float DryMassInfo = 0f;
         [KSPField(isPersistant = true)]
@@ -22,6 +24,8 @@ namespace UniversalStorage
         private EventData<int, int, Part> onUSSwitch;
         private EventData<int, Part, USFuelSwitch> onFuelRequestMass;
         private bool _updateMass = true;
+
+        private string _localizedDryMassString = "Part Mass";
 
         public override void OnAwake()
         {
@@ -35,6 +39,10 @@ namespace UniversalStorage
 
             if (onFuelRequestMass != null)
                 onFuelRequestMass.Add(onFuelSwitchRequest);
+
+            _localizedDryMassString = Localizer.Format(DisplayMassName);
+
+            Fields["DryMassInfo"].guiName = _localizedDryMassString;
         }
 
         public override void OnStart(StartState state)

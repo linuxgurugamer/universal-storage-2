@@ -38,6 +38,9 @@ namespace UniversalStorage
 
         private USdebugMessages debug;
 
+        private string _localizedDecoupleEventName = "Decouple";
+        private string _localizedDecoupleActionName = "Decouple";
+
         public override void OnAwake()
         {
             base.OnAwake();
@@ -48,6 +51,9 @@ namespace UniversalStorage
             decoupleEvent.active = false;
             decoupleAction.active = false;
             stagingEvent.active = false;
+
+            _localizedDecoupleEventName = Localizer.Format(DecoupleEventName);
+            _localizedDecoupleActionName = Localizer.Format(DecoupleActionName);
         }
 
         public override void OnStart(StartState state)
@@ -63,10 +69,10 @@ namespace UniversalStorage
             stagingEnabled = StageOption && Staged;
 
             decoupleEvent.guiActiveUnfocused = DecoupleEVA;
-            decoupleEvent.guiName = DecoupleEventName;
+            decoupleEvent.guiName = _localizedDecoupleEventName;
             decoupleEvent.active = !Decoupled;
             
-            decoupleAction.guiName = DecoupleActionName;
+            decoupleAction.guiName = _localizedDecoupleActionName;
             decoupleAction.active = !Decoupled;
 
             Fields["DecoupleTime"].guiActive = DebugMode;

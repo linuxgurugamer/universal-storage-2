@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using UnityEngine;
+using KSP.Localization;
 
 namespace UniversalStorage
 {
@@ -40,7 +39,11 @@ namespace UniversalStorage
 		public bool configLoaded = false;
 		[KSPField]
 		public bool DebugMode = false;
-		[KSPField(guiActive = false, guiActiveEditor = true, guiName = "Dry cost")]
+        [KSPField]
+        public string DisplayCostName = "Dry Cost";
+        [KSPField]
+        public string DisplayMassName = "Dry Mass";
+        [KSPField(guiActive = false, guiActiveEditor = true, guiName = "Dry cost")]
 		public float addedCost = 0f;
 		[KSPField(guiActive = false, guiActiveEditor = true, guiName = "Dry mass")]
 		public float dryMassInfo = 0f;
@@ -65,6 +68,9 @@ namespace UniversalStorage
         private EventData<int, Part, USFuelSwitch> onFuelRequestMass;
         private EventData<int, Part, USFuelSwitch> onFuelRequestCost;
 
+        private string _localizedDryCostString = "Dry Cost";
+        private string _localizedDryMassString = "Dry Mass";
+
         public override void OnStart(PartModule.StartState state)
         {
             if (String.IsNullOrEmpty(SwitchID))
@@ -75,6 +81,12 @@ namespace UniversalStorage
             onFuelRequestCost = GameEvents.FindEvent<EventData<int, Part, USFuelSwitch>>("onFuelRequestCost");
             onFuelRequestMass = GameEvents.FindEvent<EventData<int, Part, USFuelSwitch>>("onFuelRequestMass");
             onUSFuelSwitch = GameEvents.FindEvent<EventData<int, int, bool, Part>>("onUSFuelSwitch");
+
+            _localizedDryCostString = Localizer.Format(DisplayCostName);
+            _localizedDryMassString = Localizer.Format(DisplayMassName);
+
+            Fields["addedCost"].guiName = _localizedDryCostString;
+            Fields["dryMassInfo"].guiName = _localizedDryMassString;
 
             if (onUSFuelSwitch != null)
                 onUSFuelSwitch.Add(OnFuelSwitch);

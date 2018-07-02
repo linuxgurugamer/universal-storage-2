@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
+using KSP.Localization;
 
 namespace UniversalStorage
 {
@@ -36,12 +37,18 @@ namespace UniversalStorage
         private EventData<int, int, Part> onUSSwitch;
         private EventData<int, int, bool, Part> onUSFuelSwitch;
 
+        private string _localizedNextNameString = "Next part variant";
+        private string _localizedPreviousNameString = "Previous part variant";
+
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
 
-            Events["nextObjectEvent"].guiName = ButtonName;
-            Events["previousObjectEvent"].guiName = PreviousButtonName;
+            _localizedNextNameString = Localizer.Format(ButtonName);
+            _localizedPreviousNameString = Localizer.Format(PreviousButtonName);
+
+            Events["nextObjectEvent"].guiName = _localizedNextNameString;
+            Events["previousObjectEvent"].guiName = _localizedPreviousNameString;
 
             Events["RenderDragCube"].active = DebugDragCube;
 

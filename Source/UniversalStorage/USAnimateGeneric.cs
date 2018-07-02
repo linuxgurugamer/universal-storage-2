@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections;
 using UnityEngine;
+using KSP.Localization;
 
 namespace UniversalStorage
 {
@@ -166,11 +166,39 @@ namespace UniversalStorage
         
         private EventData<int, int, Part> onUSSwitch;
 
+        private string _localizedPrimaryStartString = "Deploy Primary Bays";
+        private string _localizedPrimaryEndString = "Retract Primary Bays";
+        private string _localizedPrimaryActionString = "Toggle Primary Bays";
+        private string _localizedPrimaryLockString = "Lock Primary Bays";
+        private string _localizedPrimaryUnlockString = "Unlock Primary Bays";
+        private string _localizedSecondaryStartString = "Deploy Secondary Bays";
+        private string _localizedSecondaryEndString = "Retract Secondary Bays";
+        private string _localizedSecondaryActionString = "Toggle Secondary Bays";
+        private string _localizedSecondaryLockString = "Lock Secondary Bays";
+        private string _localizedSecondaryUnlockString = "Unlock Secondary Bays";
+        private string _localizedCombinedStartString = "Deploy All Bays";
+        private string _localizedCombinedEndString = "Retract All Bays";
+        private string _localizedCombinedToggleString = "Toggle All Bays";
+
         public override void OnAwake()
 		{
 			base.OnAwake();
 
-			tglEventPrimary = Events["toggleEventPrimary"];
+            _localizedPrimaryStartString = Localizer.Format(primaryStartEventGUIName);
+            _localizedPrimaryEndString = Localizer.Format(primaryEndEventGUIName);
+            _localizedPrimaryActionString = Localizer.Format(primaryToggleActionName);
+            _localizedPrimaryLockString = Localizer.Format(lockPrimaryDoorName);
+            _localizedPrimaryUnlockString = Localizer.Format(unlockPrimaryDoorName);
+            _localizedSecondaryStartString = Localizer.Format(secondaryStartEventGUIName);
+            _localizedSecondaryEndString = Localizer.Format(secondaryEndEventGUIName);
+            _localizedSecondaryActionString = Localizer.Format(secondaryToggleActionName);
+            _localizedSecondaryLockString = Localizer.Format(lockSecondaryDoorName);
+            _localizedSecondaryUnlockString = Localizer.Format(unlockSecondaryDoorName);
+            _localizedCombinedStartString = Localizer.Format(combinedStartEventGUIName);
+            _localizedCombinedEndString = Localizer.Format(combinedEndEventGUIName);
+            _localizedCombinedToggleString = Localizer.Format(combinedToggleActionName);
+
+            tglEventPrimary = Events["toggleEventPrimary"];
 			tglActionPrimary = Actions["toggleActionPrimary"];
 			tglEventPrimary.active = false;
 			tglActionPrimary.active = false;
@@ -255,12 +283,12 @@ namespace UniversalStorage
                 tglEventPrimary.active = !(allowDoorLock && lockPrimaryDoors);
                 tglActionPrimary.active = primaryActionAvailable && !(allowDoorLock && lockPrimaryDoors);
 
-                lockEventPrimary.guiName = lockPrimaryDoors ? unlockPrimaryDoorName : lockPrimaryDoorName;
+                lockEventPrimary.guiName = lockPrimaryDoors ? _localizedPrimaryUnlockString : _localizedPrimaryLockString;
 
                 if (primaryDeployed)
                 {
-                    tglActionPrimary.guiName = primaryEndEventGUIName;
-                    tglEventPrimary.guiName = primaryEndEventGUIName;
+                    tglActionPrimary.guiName = _localizedPrimaryEndString;
+                    tglEventPrimary.guiName = _localizedPrimaryEndString;
                     _primaryAnimTime = 1;
 
                     if (oneShot)
@@ -268,13 +296,13 @@ namespace UniversalStorage
                 }
                 else
                 {
-                    tglActionPrimary.guiName = primaryStartEventGUIName;
-                    tglEventPrimary.guiName = primaryStartEventGUIName;
+                    tglActionPrimary.guiName = _localizedPrimaryStartString;
+                    tglEventPrimary.guiName = _localizedPrimaryStartString;
                     _primaryAnimTime = 0;
                 }
 
                 if (!string.IsNullOrEmpty(primaryToggleActionName))
-                    tglActionPrimary.guiName = primaryToggleActionName;
+                    tglActionPrimary.guiName = _localizedPrimaryActionString;
 
                 for (int i = _animsPrimary.Length - 1; i >= 0; i--)
                 {
@@ -331,12 +359,12 @@ namespace UniversalStorage
                 tglEventSecondary.active = !(allowDoorLock && lockSecondaryDoors);
                 tglActionSecondary.active = secondaryActionAvailable && !(allowDoorLock && lockSecondaryDoors);
 
-                lockEventSecondary.guiName = lockSecondaryDoors ? unlockSecondaryDoorName : lockSecondaryDoorName;
+                lockEventSecondary.guiName = lockSecondaryDoors ? _localizedSecondaryUnlockString : _localizedSecondaryLockString;
 
                 if (secondaryDeployed)
                 {
-                    tglActionSecondary.guiName = secondaryEndEventGUIName;
-                    tglEventSecondary.guiName = secondaryEndEventGUIName;
+                    tglActionSecondary.guiName = _localizedSecondaryEndString;
+                    tglEventSecondary.guiName = _localizedSecondaryEndString;
                     _secondaryAnimTime = 1;
 
                     if (oneShot)
@@ -344,13 +372,13 @@ namespace UniversalStorage
                 }
                 else
                 {
-                    tglActionSecondary.guiName = secondaryStartEventGUIName;
-                    tglEventSecondary.guiName = secondaryStartEventGUIName;
+                    tglActionSecondary.guiName = _localizedSecondaryStartString;
+                    tglEventSecondary.guiName = _localizedSecondaryStartString;
                     _secondaryAnimTime = 0;
                 }
 
                 if (!string.IsNullOrEmpty(secondaryToggleActionName))
-                    tglActionSecondary.guiName = secondaryToggleActionName;
+                    tglActionSecondary.guiName = _localizedSecondaryActionString;
 
                 for (int i = _animsSecondary.Length - 1; i >= 0; i--)
                 {
@@ -396,17 +424,17 @@ namespace UniversalStorage
 
                 if (combinedDeployed || (primaryDeployed && secondaryDeployed))
                 {
-                    tglActionCombined.guiName = combinedEndEventGUIName;
-                    tglEventCombined.guiName = combinedEndEventGUIName;
+                    tglActionCombined.guiName = _localizedCombinedEndString;
+                    tglEventCombined.guiName = _localizedCombinedEndString;
                 }
                 else
                 {
-                    tglActionCombined.guiName = combinedStartEventGUIName;
-                    tglEventCombined.guiName = combinedStartEventGUIName;
+                    tglActionCombined.guiName = _localizedCombinedStartString;
+                    tglEventCombined.guiName = _localizedCombinedStartString;
                 }
 
                 if (!string.IsNullOrEmpty(combinedToggleActionName))
-                    tglActionCombined.guiName = combinedToggleActionName;
+                    tglActionCombined.guiName = _localizedCombinedToggleString;
             }
             else
             {
@@ -754,7 +782,7 @@ namespace UniversalStorage
 
             lockPrimaryDoors = !lockPrimaryDoors;
 
-            lockEventPrimary.guiName = lockPrimaryDoors ? unlockPrimaryDoorName : lockPrimaryDoorName;
+            lockEventPrimary.guiName = lockPrimaryDoors ? _localizedPrimaryUnlockString : _localizedPrimaryLockString;
 
             tglEventPrimary.active = !lockPrimaryDoors && (primaryAvailableInVessel || primaryAvailableInEVA || primaryAvailableInEditor);
 
@@ -773,7 +801,7 @@ namespace UniversalStorage
 
             lockSecondaryDoors = !lockSecondaryDoors;
 
-            lockEventSecondary.guiName = lockSecondaryDoors ? unlockSecondaryDoorName : lockSecondaryDoorName;
+            lockEventSecondary.guiName = lockSecondaryDoors ? _localizedSecondaryUnlockString : _localizedSecondaryLockString;
 
             tglEventSecondary.active = !lockSecondaryDoors && (secondaryAvailableInVessel || secondaryAvailableInEVA || secondaryAvailableInEditor);
 
@@ -801,11 +829,11 @@ namespace UniversalStorage
 				if (!primaryDeployed)
 				{
 					primaryDeployed = true;
-					tglActionPrimary.guiName = primaryEndEventGUIName;
-					tglEventPrimary.guiName = primaryEndEventGUIName;
+					tglActionPrimary.guiName = _localizedPrimaryEndString;
+					tglEventPrimary.guiName = _localizedPrimaryEndString;
 
 					if (!string.IsNullOrEmpty(primaryToggleActionName))
-						tglActionPrimary.guiName = primaryToggleActionName;
+						tglActionPrimary.guiName = _localizedPrimaryActionString;
 
 					if (_animsPrimary != null)
 					{
@@ -819,11 +847,11 @@ namespace UniversalStorage
 				if (!secondaryDeployed)
 				{
 					secondaryDeployed = true;
-					tglActionSecondary.guiName = secondaryEndEventGUIName;
-					tglEventSecondary.guiName = secondaryEndEventGUIName;
+					tglActionSecondary.guiName = _localizedSecondaryEndString;
+					tglEventSecondary.guiName = _localizedSecondaryEndString;
 
 					if (!string.IsNullOrEmpty(secondaryToggleActionName))
-						tglActionSecondary.guiName = secondaryToggleActionName;
+						tglActionSecondary.guiName = _localizedSecondaryActionString;
 
 					if (_animsSecondary != null)
 					{
@@ -836,11 +864,11 @@ namespace UniversalStorage
 
 				onMove.Fire(0, 1);
 
-				tglActionCombined.guiName = combinedEndEventGUIName;
-				tglEventCombined.guiName = combinedEndEventGUIName;
+				tglActionCombined.guiName = _localizedCombinedEndString;
+				tglEventCombined.guiName = _localizedCombinedEndString;
 
 				if (!string.IsNullOrEmpty(combinedToggleActionName))
-					tglActionCombined.guiName = combinedToggleActionName;
+					tglActionCombined.guiName = _localizedCombinedToggleString;
 			}
 			else
 			{
@@ -860,11 +888,11 @@ namespace UniversalStorage
                     if (!obstructed)
                     {
                         primaryDeployed = false;
-                        tglActionPrimary.guiName = primaryStartEventGUIName;
-                        tglEventPrimary.guiName = primaryStartEventGUIName;
+                        tglActionPrimary.guiName = _localizedPrimaryStartString;
+                        tglEventPrimary.guiName = _localizedPrimaryStartString;
 
                         if (!string.IsNullOrEmpty(primaryToggleActionName))
-                            tglActionPrimary.guiName = primaryToggleActionName;
+                            tglActionPrimary.guiName = _localizedPrimaryActionString;
 
                         if (_animsPrimary != null)
                         {
@@ -892,11 +920,11 @@ namespace UniversalStorage
                     if (!obstructed)
                     {
                         secondaryDeployed = false;
-                        tglActionSecondary.guiName = secondaryStartEventGUIName;
-                        tglEventSecondary.guiName = secondaryStartEventGUIName;
+                        tglActionSecondary.guiName = _localizedSecondaryStartString;
+                        tglEventSecondary.guiName = _localizedSecondaryStartString;
 
                         if (!string.IsNullOrEmpty(secondaryToggleActionName))
-                            tglActionSecondary.guiName = secondaryToggleActionName;
+                            tglActionSecondary.guiName = _localizedSecondaryActionString;
 
                         if (_animsSecondary != null)
                         {
@@ -910,11 +938,11 @@ namespace UniversalStorage
 
 				onMove.Fire(1, 0);
 
-				tglActionCombined.guiName = combinedStartEventGUIName;
-				tglEventCombined.guiName = combinedStartEventGUIName;
+				tglActionCombined.guiName = _localizedCombinedStartString;
+				tglEventCombined.guiName = _localizedCombinedStartString;
 
 				if (!string.IsNullOrEmpty(combinedToggleActionName))
-					tglActionCombined.guiName = combinedToggleActionName;
+					tglActionCombined.guiName = _localizedCombinedToggleString;
 			}
 		}
 
@@ -952,11 +980,11 @@ namespace UniversalStorage
                 }
 
                 primaryDeployed = false;
-				tglActionPrimary.guiName = primaryStartEventGUIName;
-				tglEventPrimary.guiName = primaryStartEventGUIName;
+				tglActionPrimary.guiName = _localizedPrimaryStartString;
+				tglEventPrimary.guiName = _localizedPrimaryStartString;
 
 				if (!string.IsNullOrEmpty(primaryToggleActionName))
-					tglActionPrimary.guiName = primaryToggleActionName;
+					tglActionPrimary.guiName = _localizedPrimaryActionString;
 
 				if (_animsPrimary != null)
 				{
@@ -970,21 +998,21 @@ namespace UniversalStorage
 				{
 					combinedDeployed = false;
 
-					tglActionCombined.guiName = combinedStartEventGUIName;
-					tglEventCombined.guiName = combinedStartEventGUIName;
+					tglActionCombined.guiName = _localizedCombinedStartString;
+					tglEventCombined.guiName = _localizedCombinedStartString;
 
 					if (!string.IsNullOrEmpty(combinedToggleActionName))
-						tglActionCombined.guiName = combinedToggleActionName;
+						tglActionCombined.guiName = _localizedCombinedToggleString;
 				}
 			}
 			else
 			{
 				primaryDeployed = true;
-				tglActionPrimary.guiName = primaryEndEventGUIName;
-				tglEventPrimary.guiName = primaryEndEventGUIName;
+				tglActionPrimary.guiName = _localizedPrimaryEndString;
+				tglEventPrimary.guiName = _localizedPrimaryEndString;
 
 				if (!string.IsNullOrEmpty(primaryToggleActionName))
-					tglActionPrimary.guiName = primaryToggleActionName;
+					tglActionPrimary.guiName = _localizedPrimaryActionString;
 
 				if (_animsPrimary != null)
 				{
@@ -998,11 +1026,11 @@ namespace UniversalStorage
 				{
 					combinedDeployed = true;
 
-					tglActionCombined.guiName = combinedEndEventGUIName;
-					tglEventCombined.guiName = combinedEndEventGUIName;
+					tglActionCombined.guiName = _localizedCombinedEndString;
+					tglEventCombined.guiName = _localizedCombinedEndString;
 
 					if (!string.IsNullOrEmpty(combinedToggleActionName))
-						tglActionCombined.guiName = combinedToggleActionName;
+						tglActionCombined.guiName = _localizedCombinedToggleString;
 				}
 			}
 		}
@@ -1041,11 +1069,11 @@ namespace UniversalStorage
                 }
 
 				secondaryDeployed = false;
-				tglActionSecondary.guiName = secondaryStartEventGUIName;
-				tglEventSecondary.guiName = secondaryStartEventGUIName;
+				tglActionSecondary.guiName = _localizedSecondaryStartString;
+				tglEventSecondary.guiName = _localizedSecondaryStartString;
 
 				if (!string.IsNullOrEmpty(secondaryToggleActionName))
-					tglActionSecondary.guiName = secondaryToggleActionName;
+					tglActionSecondary.guiName = _localizedSecondaryActionString;
 
 				if (_animsSecondary != null)
 				{
@@ -1059,21 +1087,21 @@ namespace UniversalStorage
 				{
 					combinedDeployed = false;
 
-					tglActionCombined.guiName = combinedStartEventGUIName;
-					tglEventCombined.guiName = combinedStartEventGUIName;
+					tglActionCombined.guiName = _localizedCombinedStartString;
+					tglEventCombined.guiName = _localizedCombinedStartString;
 
 					if (!string.IsNullOrEmpty(combinedToggleActionName))
-						tglActionCombined.guiName = combinedToggleActionName;
+						tglActionCombined.guiName = _localizedCombinedToggleString;
 				}
 			}
 			else
 			{
 				secondaryDeployed = true;
-				tglActionSecondary.guiName = secondaryEndEventGUIName;
-				tglEventSecondary.guiName = secondaryEndEventGUIName;
+				tglActionSecondary.guiName = _localizedSecondaryEndString;
+				tglEventSecondary.guiName = _localizedSecondaryEndString;
 
 				if (!string.IsNullOrEmpty(secondaryToggleActionName))
-					tglActionSecondary.guiName = secondaryToggleActionName;
+					tglActionSecondary.guiName = _localizedSecondaryActionString;
 
 				if (_animsSecondary != null)
 				{
@@ -1087,11 +1115,11 @@ namespace UniversalStorage
 				{
 					combinedDeployed = true;
 
-					tglActionCombined.guiName = combinedEndEventGUIName;
-					tglEventCombined.guiName = combinedEndEventGUIName;
+					tglActionCombined.guiName = _localizedCombinedEndString;
+					tglEventCombined.guiName = _localizedCombinedEndString;
 
 					if (!string.IsNullOrEmpty(combinedToggleActionName))
-						tglActionCombined.guiName = combinedToggleActionName;
+						tglActionCombined.guiName = _localizedCombinedToggleString;
 				}
 			}
 		}
@@ -1393,7 +1421,7 @@ namespace UniversalStorage
 					else
 					{
 						primaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
-						tglEventPrimary.guiName = primaryEndEventGUIName;
+						tglEventPrimary.guiName = _localizedPrimaryEndString;
 						tglEventPrimary.guiActive = primaryAvailableInVessel;
 					}
 				}
@@ -1409,7 +1437,7 @@ namespace UniversalStorage
 					else
 					{
 						secondaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
-						tglEventSecondary.guiName = secondaryEndEventGUIName;
+						tglEventSecondary.guiName = _localizedSecondaryEndString;
 						tglEventSecondary.guiActive = secondaryAvailableInVessel;
 					}
 				}
@@ -1420,7 +1448,7 @@ namespace UniversalStorage
 				{
 					primaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
 					primaryDeployed = false;
-					tglEventPrimary.guiName = primaryStartEventGUIName;
+					tglEventPrimary.guiName = _localizedPrimaryStartString;
 					tglEventPrimary.guiActive = primaryAvailableInVessel;
 				}
 
@@ -1428,7 +1456,7 @@ namespace UniversalStorage
 				{
 					secondaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
 					secondaryDeployed = false;
-					tglEventSecondary.guiName = secondaryStartEventGUIName;
+					tglEventSecondary.guiName = _localizedSecondaryStartString;
 					tglEventSecondary.guiActive = secondaryAvailableInVessel;
 				}
 			}

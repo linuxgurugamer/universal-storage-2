@@ -1,5 +1,6 @@
 ﻿
 using System;
+using KSP.Localization;
 
 namespace UniversalStorage
 {
@@ -11,7 +12,9 @@ namespace UniversalStorage
         public string AddedCost = string.Empty;
         [KSPField]
         public bool DisplayCurrentModeCost = false;
-        [KSPField(guiActive = false, guiActiveEditor = false, guiName = "Part cost")]
+        [KSPField]
+        public string DisplayCostName = "Part Cost";
+        [KSPField(guiActive = false, guiActiveEditor = false, guiName = "Part Cost")]
         public float AddedCostValue = 0f;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
@@ -21,6 +24,8 @@ namespace UniversalStorage
         private EventData<int, int, Part> onUSSwitch;
         private EventData<int, Part, USFuelSwitch> onFuelRequestCost;
         private bool _updateCost = true;
+
+        private string _localizedDryCostString = "Part Cost";
 
         public override void OnAwake()
         {
@@ -34,6 +39,10 @@ namespace UniversalStorage
 
             if (onFuelRequestCost != null)
                 onFuelRequestCost.Add(onFuelSwitchRequest);
+
+            _localizedDryCostString = Localizer.Format(DisplayCostName);
+
+            Fields["AddedCostValue"].guiName = _localizedDryCostString;
         }
 
         public override void OnStart(StartState state)
