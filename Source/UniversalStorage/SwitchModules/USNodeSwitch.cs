@@ -17,7 +17,7 @@ namespace UniversalStorage
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
         [KSPField]
-        public bool DebugMode = true;
+        public bool DebugMode = false;
 
         private int[] _SwitchIndices;
         private List<List<ModuleStructuralNode>> _Nodes;
@@ -49,16 +49,20 @@ namespace UniversalStorage
                 onUSSwitch.Add(onSwitch);
 
             UpdateAttachNodes();
-
-            USTools.KSPVersionCheck();
-
+            
             if (HighLogic.LoadedSceneIsEditor)
             {
-                if (ShiftNodes && !string.IsNullOrEmpty(ShiftedNodeNames))
-                {
-                    _ShiftedNodes = USTools.parseAttachNodes(ShiftedNodeNames, part).ToArray();
+                if (!USTools.VersionChecked)
+                    USTools.KSPVersionCheck();
 
-                    debug.debugMessage("Shift Nodes Parsed: " + _ShiftedNodes.Length);
+                if (USTools.KSP14)
+                {
+                    if (ShiftNodes && !string.IsNullOrEmpty(ShiftedNodeNames))
+                    {
+                        _ShiftedNodes = USTools.parseAttachNodes(ShiftedNodeNames, part).ToArray();
+
+                        debug.debugMessage("Shift Nodes Parsed: " + _ShiftedNodes.Length);
+                    }
                 }
             }
         }
@@ -152,10 +156,6 @@ namespace UniversalStorage
             newNode.attachedPart = previousNode.attachedPart;
 
             previousNode.attachedPart = null;
-
-            //previousNode.originalPosition = newNode.originalPosition;
-            //previousNode.position = newNode.position;
-            //previousNode.size = newNode.size;
         }
     }
 }
