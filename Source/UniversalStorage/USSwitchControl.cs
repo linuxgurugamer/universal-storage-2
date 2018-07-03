@@ -30,15 +30,19 @@ namespace UniversalStorage
         public bool DebugDragCube = true;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
+        [KSPField]
+        public string CurrentVariantTitle = "Current Variant";
         [KSPField(guiActiveEditor = true, guiName = "Current Variant")]
         public string CurrentObjectName = string.Empty;
 
         private string[] SwitchNames;
+        private string[] _localizedSwitchNames;
         private EventData<int, int, Part> onUSSwitch;
         private EventData<int, int, bool, Part> onUSFuelSwitch;
 
         private string _localizedNextNameString = "Next part variant";
         private string _localizedPreviousNameString = "Previous part variant";
+        private string _localizedCurrentVariantString = "Current Variant";
 
         public override void OnStart(StartState state)
         {
@@ -46,11 +50,14 @@ namespace UniversalStorage
 
             _localizedNextNameString = Localizer.Format(ButtonName);
             _localizedPreviousNameString = Localizer.Format(PreviousButtonName);
+            _localizedCurrentVariantString = Localizer.Format(CurrentVariantTitle);
 
             Events["nextObjectEvent"].guiName = _localizedNextNameString;
             Events["previousObjectEvent"].guiName = _localizedPreviousNameString;
 
             Events["RenderDragCube"].active = DebugDragCube;
+
+            Fields["CurrentObjectName"].guiName = _localizedCurrentVariantString;
 
             if (!ShowPreviousButton)
                 Events["previousObjectEvent"].guiActiveEditor = false;
@@ -80,13 +87,20 @@ namespace UniversalStorage
             if (SwitchNames == null || SwitchNames.Length == 0)
                 return;
 
-            if (CurrentSelection >= SwitchNames.Length)
-                CurrentSelection = SwitchNames.Length - 1;
+            _localizedSwitchNames = new string[SwitchNames.Length];
+
+            for (int i = SwitchNames.Length - 1; i >= 0; i--)
+            {
+                _localizedSwitchNames[i] = Localizer.Format(SwitchNames[i]);
+            }
+
+            if (CurrentSelection >= _localizedSwitchNames.Length)
+                CurrentSelection = _localizedSwitchNames.Length - 1;
 
             if (CurrentSelection < 0)
                 CurrentSelection = 0;
 
-            CurrentObjectName = SwitchNames[CurrentSelection];
+            CurrentObjectName = _localizedSwitchNames[CurrentSelection];
         }
 
         public override string GetInfo()
@@ -114,7 +128,7 @@ namespace UniversalStorage
         {
             CurrentSelection++;
 
-            if (CurrentSelection >= SwitchNames.Length)
+            if (CurrentSelection >= _localizedSwitchNames.Length)
                 CurrentSelection = 0;
 
             SwitchTo(true);
@@ -126,14 +140,14 @@ namespace UniversalStorage
             CurrentSelection--;
 
             if (CurrentSelection < 0)
-                CurrentSelection = SwitchNames.Length - 1;
+                CurrentSelection = _localizedSwitchNames.Length - 1;
 
             SwitchTo(true);
         }
 
         private void SwitchTo(bool player)
         {
-            if (SwitchNames == null || SwitchNames.Length == 0)
+            if (_localizedSwitchNames == null || _localizedSwitchNames.Length == 0)
                 return;
 
             Switch();
@@ -165,7 +179,7 @@ namespace UniversalStorage
             else if (FuelSwitchModeTwo)
                 onUSFuelSwitch.Fire(SwitchID, CurrentSelection, false, part);
 
-            CurrentObjectName = SwitchNames[CurrentSelection];
+            CurrentObjectName = _localizedSwitchNames[CurrentSelection];
 
             GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
