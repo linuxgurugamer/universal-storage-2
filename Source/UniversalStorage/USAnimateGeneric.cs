@@ -9,6 +9,8 @@ namespace UniversalStorage
 		[KSPField(guiActive = true, guiActiveEditor = true)]
 		public string status = "Locked";
         [KSPField]
+        public string statusTitle = "Status";
+        [KSPField]
 		public string primaryAnimationName;
 		[KSPField]
 		public string secondaryAnimationName;
@@ -180,6 +182,12 @@ namespace UniversalStorage
         private string _localizedCombinedEndString = "Retract All Bays";
         private string _localizedCombinedToggleString = "Toggle All Bays";
 
+        private string _localizedStatusString = "Status";
+
+        private string _localizedMoving = "Moving...";
+        private string _localizedLocked = "Locked";
+        private string _localizedFixed = "Fixed";
+
         public override void OnAwake()
 		{
 			base.OnAwake();
@@ -197,6 +205,12 @@ namespace UniversalStorage
             _localizedCombinedStartString = Localizer.Format(combinedStartEventGUIName);
             _localizedCombinedEndString = Localizer.Format(combinedEndEventGUIName);
             _localizedCombinedToggleString = Localizer.Format(combinedToggleActionName);
+
+            _localizedStatusString = Localizer.Format(statusTitle);
+
+            _localizedMoving = Localizer.Format("#autoLOC_215506");
+            _localizedFixed = Localizer.Format("#autoLOC_215714");
+            _localizedLocked = Localizer.Format("#autoLOC_215719");
 
             tglEventPrimary = Events["toggleEventPrimary"];
 			tglActionPrimary = Actions["toggleActionPrimary"];
@@ -223,6 +237,8 @@ namespace UniversalStorage
             jettAction = Actions["jettisonAction"];
             jettEvent.active = false;
             jettAction.active = false;
+
+            Fields["status"].guiName = _localizedStatusString;
 
 			onStop = new EventData<float>(string.Format("{0}_{1}_onStop", part.partName, part.flightID));
 			onMove = new EventData<float, float>(string.Format("{0}_{1}_onMove", part.partName, part.flightID));
@@ -646,15 +662,15 @@ namespace UniversalStorage
 
 			if (primaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING || secondaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING)
 			{
-				status = "Moving...";
+                status = _localizedMoving;
 			}
 			else if (primaryAnimationState == ModuleAnimateGeneric.animationStates.LOCKED || secondaryAnimationState == ModuleAnimateGeneric.animationStates.LOCKED)
 			{
-				status = "Locked";
+				status = _localizedLocked;
 			}
 			else if (primaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED || secondaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED)
 			{
-				status = "Fixed";
+				status = _localizedFixed;
 			}
 		}
         
@@ -1477,15 +1493,15 @@ namespace UniversalStorage
 
 			if (primaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING || secondaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING)
 			{
-				status = "Moving...";
+				status = _localizedMoving;
 			}
 			else if (primaryAnimationState == ModuleAnimateGeneric.animationStates.LOCKED || secondaryAnimationState == ModuleAnimateGeneric.animationStates.LOCKED)
 			{
-				status = "Locked";
+				status = _localizedLocked;
 			}
 			else if (primaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED || secondaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED)
 			{
-				status = "Fixed";
+				status = _localizedFixed;
 			}
 		}
 
