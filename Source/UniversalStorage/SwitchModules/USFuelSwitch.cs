@@ -133,7 +133,7 @@ namespace UniversalStorage
 				List<string> resourceList = USTools.parseNames(resourceNames);
 
 				StringBuilder info = StringBuilderCache.Acquire();
-				info.AppendLine("Fuel tank setups available:");
+				info.AppendLine(Localizer.Format("#autoLOC_US_FuelVariants"));
 
 				for (int i = 0; i < resourceList.Count; i++)
 					info.AppendLine(resourceList[i].Replace(",", ", "));
@@ -143,6 +143,11 @@ namespace UniversalStorage
 			else
 				return base.GetInfo();
 		}
+
+        public override string GetModuleDisplayName()
+        {
+            return Localizer.Format("#autoLOC_US_ModuleFuelSwitch");
+        }
 
         private void initializeData()
         {

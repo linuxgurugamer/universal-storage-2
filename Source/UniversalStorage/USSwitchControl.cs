@@ -110,17 +110,22 @@ namespace UniversalStorage
                 string[] variantList = USTools.parseNames(ObjectNames, false, true, String.Empty).ToArray();
 
                 StringBuilder info = StringBuilderCache.Acquire();
-                info.AppendLine("Part variants available:");
+                info.AppendLine(Localizer.Format("#autoLOC_US_PartVariants"));
 
                 for (int i = 0; i < variantList.Length; i++)
                 {
-                    info.AppendLine(variantList[i]);
+                    info.AppendLine(Localizer.Format(variantList[i]));
                 }
 
                 return info.ToStringAndRelease();
             }
             else
                 return base.GetInfo();
+        }
+
+        public override string GetModuleDisplayName()
+        {
+            return Localizer.Format("#autoLOC_US_ModuleSwitchControl");
         }
 
         [KSPEvent(guiActive = false, guiActiveEditor = true, guiActiveUnfocused = false, guiName = "Next part variant")]
