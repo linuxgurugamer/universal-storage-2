@@ -32,6 +32,8 @@ namespace UniversalStorage
         public int CurrentSelection = 0;
         [KSPField]
         public string CurrentVariantTitle = "Current Variant";
+        [KSPField]
+        public string ModuleDisplayName = "Switch Control";
         [KSPField(guiActiveEditor = true, guiName = "Current Variant")]
         public string CurrentObjectName = string.Empty;
 
@@ -125,7 +127,7 @@ namespace UniversalStorage
 
         public override string GetModuleDisplayName()
         {
-            return Localizer.Format("#autoLOC_US_ModuleSwitchControl");
+            return Localizer.Format(ModuleDisplayName);
         }
 
         [KSPEvent(guiActive = false, guiActiveEditor = true, guiActiveUnfocused = false, guiName = "Next part variant")]

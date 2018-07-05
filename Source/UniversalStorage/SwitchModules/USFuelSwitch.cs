@@ -28,7 +28,7 @@ namespace UniversalStorage
 		[KSPField]
 		public bool availableInEditor = false;
 		[KSPField]
-		public bool showInfo = true;
+		public bool ShowInfo = true;
 		[KSPField(isPersistant = true)]
 		public int selectedTankModeOne = -1;
 		[KSPField(isPersistant = true)]
@@ -43,6 +43,8 @@ namespace UniversalStorage
         public string DisplayCostName = "Dry Cost";
         [KSPField]
         public string DisplayMassName = "Dry Mass";
+        [KSPField]
+        public string ModuleDisplayName = "Fuel Switch";
         [KSPField(guiActive = false, guiActiveEditor = true, guiName = "Dry cost")]
 		public float addedCost = 0f;
 		[KSPField(guiActive = false, guiActiveEditor = true, guiName = "Dry mass")]
@@ -70,6 +72,7 @@ namespace UniversalStorage
 
         private string _localizedDryCostString = "Dry Cost";
         private string _localizedDryMassString = "Dry Mass";
+        private string _localizedModuleDisplayName = "Fuel Switch";
 
         public override void OnStart(PartModule.StartState state)
         {
@@ -84,6 +87,7 @@ namespace UniversalStorage
 
             _localizedDryCostString = Localizer.Format(DisplayCostName);
             _localizedDryMassString = Localizer.Format(DisplayMassName);
+            _localizedModuleDisplayName = Localizer.Format(ModuleDisplayName);
 
             Fields["addedCost"].guiName = _localizedDryCostString;
             Fields["dryMassInfo"].guiName = _localizedDryMassString;
@@ -128,7 +132,7 @@ namespace UniversalStorage
 
 		public override string GetInfo()
 		{
-			if (showInfo)
+			if (ShowInfo)
 			{
 				List<string> resourceList = USTools.parseNames(resourceNames);
 
@@ -146,7 +150,7 @@ namespace UniversalStorage
 
         public override string GetModuleDisplayName()
         {
-            return Localizer.Format("#autoLOC_US_ModuleFuelSwitch");
+            return _localizedModuleDisplayName;
         }
 
         private void initializeData()
