@@ -33,7 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Kerbal Space Program\KSP_x64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
@@ -62,6 +63,7 @@
     <Compile Include="SwitchModules\USFuelSwitch.cs" />
     <Compile Include="SwitchModules\USJettisonSwitch.cs" />
     <Compile Include="SwitchModules\USMassSwitch.cs" />
+    <Compile Include="USLocalizer.cs" />
     <Compile Include="USMeshObject.cs" />
     <Compile Include="USMeshSwitchOld.cs" />
     <Compile Include="SwitchModules\USMeshSwitch.cs" />
@@ -72,6 +74,12 @@
     <Compile Include="USSwitchControl.cs" />
     <Compile Include="USTextureSwitch.cs" />
     <Compile Include="USTools.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\UniversalStorage.Unity\UniversalStorage.Unity.csproj">
+      <Project>{c007d381-0135-43bd-aac7-95e3d40283f8}</Project>
+      <Name>UniversalStorage.Unity</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
