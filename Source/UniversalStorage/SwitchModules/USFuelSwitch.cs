@@ -72,7 +72,6 @@ namespace UniversalStorage
 
         private string _localizedDryCostString = "Dry Cost";
         private string _localizedDryMassString = "Dry Mass";
-        private string _localizedModuleDisplayName = "Fuel Switch";
 
         public override void OnStart(PartModule.StartState state)
         {
@@ -87,7 +86,6 @@ namespace UniversalStorage
 
             _localizedDryCostString = Localizer.Format(DisplayCostName);
             _localizedDryMassString = Localizer.Format(DisplayMassName);
-            _localizedModuleDisplayName = Localizer.Format(ModuleDisplayName);
 
             Fields["addedCost"].guiName = _localizedDryCostString;
             Fields["dryMassInfo"].guiName = _localizedDryMassString;
@@ -150,7 +148,7 @@ namespace UniversalStorage
 
         public override string GetModuleDisplayName()
         {
-            return _localizedModuleDisplayName;
+            return Localizer.Format(ModuleDisplayName);
         }
 
         private void initializeData()
