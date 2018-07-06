@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿
+using System.Collections;
+using UnityEngine;
 using KSP.Localization;
 using UniversalStorage.Unity;
 
@@ -19,7 +21,12 @@ namespace UniversalStorage
 
         private void OnLocalize(KSPediaLocalizer localizer, string tag)
         {
-            USdebugMessages.USStaticLog("Localize Request Received: {0}", tag);
+            StartCoroutine(WaitForLocalize(localizer, tag));
+        }
+
+        private IEnumerator WaitForLocalize(KSPediaLocalizer localizer, string tag)
+        {
+            yield return new WaitForEndOfFrame();
 
             localizer.UpdateText(Localizer.Format(tag));
         }
