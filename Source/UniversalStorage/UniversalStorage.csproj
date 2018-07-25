@@ -57,21 +57,18 @@
     <Compile Include="SwitchModules\USCostSwitch.cs" />
     <Compile Include="SwitchModules\USDragSwitch.cs" />
     <Compile Include="USDecouple.cs" />
-    <Compile Include="USDoorTest.cs" />
-    <Compile Include="USDoorTrigger.cs" />
     <Compile Include="USEvents.cs" />
     <Compile Include="SwitchModules\USFuelSwitch.cs" />
     <Compile Include="SwitchModules\USJettisonSwitch.cs" />
     <Compile Include="SwitchModules\USMassSwitch.cs" />
     <Compile Include="USLocalizer.cs" />
-    <Compile Include="USMeshObject.cs" />
-    <Compile Include="USMeshSwitchOld.cs" />
     <Compile Include="SwitchModules\USMeshSwitch.cs" />
     <Compile Include="SwitchModules\USNodeSwitch.cs" />
     <Compile Include="USModuleGreeble.cs" />
+    <Compile Include="USModuleStructuralNode.cs" />
     <Compile Include="USReactionWheel.cs" />
     <Compile Include="USResource.cs" />
-    <Compile Include="USSwitchControl.cs" />
+    <Compile Include="SwitchModules\USSwitchControl.cs" />
     <Compile Include="USTextureSwitch.cs" />
     <Compile Include="USTools.cs" />
   </ItemGroup>
