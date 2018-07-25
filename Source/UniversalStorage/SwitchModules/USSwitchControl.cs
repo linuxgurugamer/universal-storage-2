@@ -27,7 +27,7 @@ namespace UniversalStorage
         [KSPField]
         public bool FuelSwitchModeTwo = false;
         [KSPField]
-        public bool DebugDragCube = true;
+        public bool DebugDragCube = false;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
         [KSPField]
