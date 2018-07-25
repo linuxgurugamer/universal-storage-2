@@ -110,7 +110,7 @@ namespace UniversalStorage
                     
                     UpdateCargoModule();
 
-                    debugDraw = true;
+                    debugDraw = DebugMode;
 
                     break;
                 }
