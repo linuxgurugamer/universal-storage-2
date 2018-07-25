@@ -215,18 +215,7 @@ namespace UniversalStorage
         [KSPAction("Decouple")]
         public void DecoupleAction(KSPActionParam param)
         {
-            decoupleEvent.active = false;
-            decoupleAction.active = false;
-
-            if (Decoupled)
-                return;
-
-            Decoupled = true;
-
-            for (int i = _decoupleAnimation.Length - 1; i >= 0; i--)
-            {
-                Animate(_decoupleAnimation[i], AnimationSpeed);
-            }
+            DecoupleEvent();
         }
 
         private void Animate(Animation anim, float speed)
