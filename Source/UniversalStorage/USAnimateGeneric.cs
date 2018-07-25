@@ -46,7 +46,19 @@ namespace UniversalStorage
 		public bool secondaryDeployed = false;
 		[KSPField(isPersistant = true)]
 		public bool combinedDeployed = false;
-		[KSPField]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true), UI_FloatRange(minValue = 0, maxValue = 100, stepIncrement = 1)]
+        public float primaryDeployLimit = 100;
+        [KSPField]
+        public string primaryDeployLimitName = "Primary Bay Deploy Limit";
+        [KSPField]
+        public bool primaryDeployLimitInFlight = false;
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true), UI_FloatRange(minValue = 0, maxValue = 100, stepIncrement = 1)]
+        public float secondaryDeployLimit = 100;
+        [KSPField]
+        public string secondaryDeployLimitName = "Secondary Bay Deploy Limit";
+        [KSPField]
+        public bool secondaryDeployLimitInFlight = false;
+        [KSPField]
 		public float customAnimationSpeed = 1f;
 		[KSPField]
 		public float scalarAnimationSpeed = 1f;
@@ -109,7 +121,11 @@ namespace UniversalStorage
         [KSPField]
         public string PrimaryDoorObstructionLength = string.Empty;
         [KSPField]
+        public float PrimaryObstructionLength = 0;
+        [KSPField]
         public string SecondaryDoorObstructionLength = string.Empty;
+        [KSPField]
+        public float SecondaryObstructionLength = 0;
         [KSPField]
         public bool ObstructionDebugLines = false;
         [KSPField(isPersistant = true)]
@@ -141,7 +157,13 @@ namespace UniversalStorage
         private BaseEvent jettEvent;
         private BaseAction jettAction;
 
-		private Animation[] _animsPrimary;
+        private BaseField primaryLimit;
+        private BaseField secondaryLimit;
+
+        private bool _primaryDeployReached;
+        private bool _secondaryDeployReached;
+
+        private Animation[] _animsPrimary;
 		private Animation[] _animsSecondary;
         
 		private EventData<float> onStop;
@@ -162,9 +184,6 @@ namespace UniversalStorage
         private double[] _SecondaryObstructionLengths;
         private Transform[] _PrimaryObstructionSources;
         private Transform[] _SecondaryObstructionSources;
-
-        private float _PrimaryObstructionLength;
-        private float _SecondaryObstructionLength;
         
         private EventData<int, int, Part> onUSSwitch;
 
@@ -173,20 +192,23 @@ namespace UniversalStorage
         private string _localizedPrimaryActionString = "Toggle Primary Bays";
         private string _localizedPrimaryLockString = "Lock Primary Bays";
         private string _localizedPrimaryUnlockString = "Unlock Primary Bays";
+        private string _localizedPrimaryLimit = "Primary Bay Deploy Limit";
         private string _localizedSecondaryStartString = "Deploy Secondary Bays";
         private string _localizedSecondaryEndString = "Retract Secondary Bays";
         private string _localizedSecondaryActionString = "Toggle Secondary Bays";
         private string _localizedSecondaryLockString = "Lock Secondary Bays";
         private string _localizedSecondaryUnlockString = "Unlock Secondary Bays";
+        private string _localizedSecondaryLimit = "Secondary Bay Deploy Limit";
         private string _localizedCombinedStartString = "Deploy All Bays";
         private string _localizedCombinedEndString = "Retract All Bays";
         private string _localizedCombinedToggleString = "Toggle All Bays";
-
+        
         private string _localizedStatusString = "Status";
 
         private string _localizedMoving = "Moving...";
         private string _localizedLocked = "Locked";
         private string _localizedFixed = "Fixed";
+        private string _localizedClamp = "Clamped";
 
         public override void OnAwake()
 		{
@@ -197,11 +219,13 @@ namespace UniversalStorage
             _localizedPrimaryActionString = Localizer.Format(primaryToggleActionName);
             _localizedPrimaryLockString = Localizer.Format(lockPrimaryDoorName);
             _localizedPrimaryUnlockString = Localizer.Format(unlockPrimaryDoorName);
+            _localizedPrimaryLimit = Localizer.Format(primaryDeployLimitName);
             _localizedSecondaryStartString = Localizer.Format(secondaryStartEventGUIName);
             _localizedSecondaryEndString = Localizer.Format(secondaryEndEventGUIName);
             _localizedSecondaryActionString = Localizer.Format(secondaryToggleActionName);
             _localizedSecondaryLockString = Localizer.Format(lockSecondaryDoorName);
             _localizedSecondaryUnlockString = Localizer.Format(unlockSecondaryDoorName);
+            _localizedSecondaryLimit = Localizer.Format(secondaryDeployLimitName);
             _localizedCombinedStartString = Localizer.Format(combinedStartEventGUIName);
             _localizedCombinedEndString = Localizer.Format(combinedEndEventGUIName);
             _localizedCombinedToggleString = Localizer.Format(combinedToggleActionName);
@@ -211,6 +235,7 @@ namespace UniversalStorage
             _localizedMoving = Localizer.Format("#autoLOC_215506");
             _localizedFixed = Localizer.Format("#autoLOC_215714");
             _localizedLocked = Localizer.Format("#autoLOC_215719");
+            _localizedClamp = Localizer.Format("#autoLOC_215760");
 
             tglEventPrimary = Events["toggleEventPrimary"];
 			tglActionPrimary = Actions["toggleActionPrimary"];
@@ -237,6 +262,19 @@ namespace UniversalStorage
             jettAction = Actions["jettisonAction"];
             jettEvent.active = false;
             jettAction.active = false;
+
+            primaryLimit = Fields["primaryDeployLimit"];
+            primaryLimit.guiName = _localizedPrimaryLimit;
+
+            secondaryLimit = Fields["secondaryDeployLimit"];
+            secondaryLimit.guiName = _localizedSecondaryLimit;
+            
+            if (HighLogic.LoadedSceneIsEditor)
+            {
+                (primaryLimit.uiControlEditor as UI_FloatRange).onFieldChanged = OnPrimaryDeployChange;
+                (secondaryLimit.uiControlEditor as UI_FloatRange).onFieldChanged = OnSecondaryDeployChange;
+
+            }
 
             Fields["status"].guiName = _localizedStatusString;
 
@@ -281,8 +319,11 @@ namespace UniversalStorage
         {
             base.OnStartFinished(state);
 
-            _animsPrimary = part.FindModelAnimators(primaryAnimationName);
-            _animsSecondary = part.FindModelAnimators(secondaryAnimationName);
+            if (!string.IsNullOrEmpty(primaryAnimationName))
+                _animsPrimary = part.FindModelAnimators(primaryAnimationName);
+
+            if (!string.IsNullOrEmpty(secondaryAnimationName))
+                _animsSecondary = part.FindModelAnimators(secondaryAnimationName);
 
             if (_animsPrimary != null)
                 debug.debugMessage("[US_Anim] Primary Animations found: " + _animsPrimary.Length);
@@ -305,7 +346,7 @@ namespace UniversalStorage
                 {
                     tglActionPrimary.guiName = _localizedPrimaryEndString;
                     tglEventPrimary.guiName = _localizedPrimaryEndString;
-                    _primaryAnimTime = 1;
+                    _primaryAnimTime = primaryDeployLimit;
 
                     if (oneShot)
                         primaryAnimationState = ModuleAnimateGeneric.animationStates.FIXED;
@@ -381,7 +422,7 @@ namespace UniversalStorage
                 {
                     tglActionSecondary.guiName = _localizedSecondaryEndString;
                     tglEventSecondary.guiName = _localizedSecondaryEndString;
-                    _secondaryAnimTime = 1;
+                    _secondaryAnimTime = secondaryDeployLimit;
 
                     if (oneShot)
                         secondaryAnimationState = ModuleAnimateGeneric.animationStates.FIXED;
@@ -462,6 +503,12 @@ namespace UniversalStorage
                 tglActionCombined.guiName = "Toggle All (Disabled)";
             }
             
+            primaryLimit.guiActiveEditor = !(allowDoorLock && lockPrimaryDoors) && _animsPrimary != null;
+            primaryLimit.guiActive = !(allowDoorLock && lockPrimaryDoors) && primaryDeployLimitInFlight && _animsPrimary != null;
+            
+            secondaryLimit.guiActiveEditor = !(allowDoorLock && lockSecondaryDoors) && _animsSecondary != null;
+            secondaryLimit.guiActive = !(allowDoorLock && lockSecondaryDoors) && secondaryDeployLimitInFlight && _animsSecondary != null;
+
             if (CurrentSelection >= 0)
             {
                 UpdateEventStates();
@@ -474,7 +521,7 @@ namespace UniversalStorage
 
             if (!String.IsNullOrEmpty(PrimaryDoorObstructionLength))
                 _PrimaryObstructionLengths = USTools.parseDoubles(PrimaryDoorObstructionLength).ToArray();
-
+            
             if (!String.IsNullOrEmpty(SecondaryDoorObstructionLength))
                 _SecondaryObstructionLengths = USTools.parseDoubles(SecondaryDoorObstructionLength).ToArray();
 
@@ -484,7 +531,7 @@ namespace UniversalStorage
             if (!String.IsNullOrEmpty(SecondaryDoorObstructionSource))
                 _SecondaryObstructionSources = part.FindModelTransforms(SecondaryDoorObstructionSource);
             
-            if (CurrentSelection > 0)
+            if (CurrentSelection >= 0)
                 UpdateCollisionLength();
 
             //var triggers = part.FindModelTransforms(DoorObstructionTrigger);
@@ -498,7 +545,7 @@ namespace UniversalStorage
             //    trigger.Init(this);
             //}
         }
-
+        
         private void AssignJettisonModules()
         {
             int[] indices = USTools.parseIntegers(jettisonIndices).ToArray();
@@ -590,11 +637,14 @@ namespace UniversalStorage
 								}
 
 								if (primaryDeployed)
-									_primaryAnimTime = 1;
+									_primaryAnimTime = primaryDeployLimit * 0.01f;
 								else
 									_primaryAnimTime = 0;
+                                
+                                primaryLimit.guiActiveEditor = true;
+                                primaryLimit.guiActive = primaryDeployLimitInFlight;
 
-								anim[primaryAnimationName].normalizedTime = _primaryAnimTime;
+                                anim[primaryAnimationName].normalizedTime = _primaryAnimTime;
 								SetDragCubes(1 - _primaryAnimTime);
 								anim.Stop(primaryAnimationName);
 								onStop.Fire(_primaryAnimTime);
@@ -605,9 +655,47 @@ namespace UniversalStorage
 								_primaryAnimTime = anim[primaryAnimationName].normalizedTime;
 								primaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
 								SetDragCubes(1 - _primaryAnimTime);
+
+                                if (anim[primaryAnimationName].speed > 0)
+                                {
+                                    if (_primaryAnimTime >= primaryDeployLimit * 0.01f)
+                                    {
+                                        _primaryAnimTime = primaryDeployLimit * 0.01f;
+
+                                        for (int j = _animsPrimary.Length - 1; j >= 0; j--)
+                                        {
+                                            if (j == i)
+                                                continue;
+
+                                            Animation otherAnim = _animsPrimary[j];
+
+                                            if (otherAnim == null)
+                                                continue;
+
+                                            otherAnim[primaryAnimationName].normalizedTime = _primaryAnimTime;
+                                            otherAnim[primaryAnimationName].speed = 0;
+                                            otherAnim.Stop(primaryAnimationName);
+                                        }
+
+                                        anim[primaryAnimationName].normalizedTime = _primaryAnimTime;
+                                        anim[primaryAnimationName].speed = 0;
+                                        anim.Stop(primaryAnimationName);
+                                    }
+                                }
 							}
 						}
+                        //else
+                        //{
+                        //    if (_primaryDeployReached)
+                        //    {
+                        //        anim[primaryAnimationName].normalizedTime = _primaryAnimTime;
+                        //        anim[primaryAnimationName].speed = 0;
+                        //        anim.Stop(primaryAnimationName);
+                        //    }
+                        //}
 					}
+
+                    _primaryDeployReached = false;
 				}
 			}
 
@@ -641,11 +729,14 @@ namespace UniversalStorage
 								}
 
 								if (secondaryDeployed)
-									_secondaryAnimTime = 1;
+									_secondaryAnimTime = secondaryDeployLimit * 0.01f;
 								else
 									_secondaryAnimTime = 0;
 
-								anim[secondaryAnimationName].normalizedTime = _secondaryAnimTime;
+                                secondaryLimit.guiActiveEditor = true;
+                                secondaryLimit.guiActive = secondaryDeployLimitInFlight;
+
+                                anim[secondaryAnimationName].normalizedTime = _secondaryAnimTime;
 								anim.Stop(secondaryAnimationName);
 								onStop.Fire(_secondaryAnimTime);
                             }
@@ -654,26 +745,216 @@ namespace UniversalStorage
 								//debug.debugMessage(string.Format("Animation {0} playing - Time: {1:F2}", secondaryAnimationName, anim[secondaryAnimationName].normalizedTime));
 								_secondaryAnimTime = anim[secondaryAnimationName].normalizedTime;
 								secondaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
-							}
+
+                                if (anim[secondaryAnimationName].speed > 0)
+                                {
+                                    if (_secondaryAnimTime >= secondaryDeployLimit * 0.01f)
+                                    {
+                                        _secondaryAnimTime = secondaryDeployLimit * 0.01f;
+
+                                        for (int j = _animsSecondary.Length - 1; j >= 0; j--)
+                                        {
+                                            if (j == i)
+                                                continue;
+
+                                            Animation otherAnim = _animsSecondary[j];
+
+                                            if (otherAnim == null)
+                                                continue;
+
+                                            otherAnim[secondaryAnimationName].normalizedTime = _secondaryAnimTime;
+                                            otherAnim[secondaryAnimationName].speed = 0;
+                                            otherAnim.Stop(secondaryAnimationName);
+                                        }
+
+                                        anim[secondaryAnimationName].normalizedTime = _secondaryAnimTime;
+                                        anim[secondaryAnimationName].speed = 0;
+                                        anim.Stop(secondaryAnimationName);
+                                    }
+                                }
+                            }
 						}
 					}
 				}
 			}
 
-			if (primaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING || secondaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING)
-			{
-                status = _localizedMoving;
-			}
-			else if (primaryAnimationState == ModuleAnimateGeneric.animationStates.LOCKED || secondaryAnimationState == ModuleAnimateGeneric.animationStates.LOCKED)
-			{
-				status = _localizedLocked;
-			}
-			else if (primaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED || secondaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED)
-			{
-				status = _localizedFixed;
-			}
+            if (primaryAnimationState == ModuleAnimateGeneric.animationStates.CLAMPED || secondaryAnimationState == ModuleAnimateGeneric.animationStates.CLAMPED)
+            {
+                status = _localizedClamp;
+            }
+            else
+            {
+                if (primaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING || secondaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING)
+                {
+                    status = _localizedMoving;
+                }
+                else if (primaryAnimationState == ModuleAnimateGeneric.animationStates.LOCKED || secondaryAnimationState == ModuleAnimateGeneric.animationStates.LOCKED)
+                {
+                    status = _localizedLocked;
+                }
+                else if (primaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED || secondaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED)
+                {
+                    status = _localizedFixed;
+                }
+            }
 		}
-        
+
+        private void OnPrimaryDeployChange(BaseField field, object obj)
+        {
+            if (HighLogic.LoadedSceneIsFlight)
+                return;
+
+            float deploy = primaryDeployLimit * 0.01f;
+
+            if (_animsPrimary == null)
+            {
+                primaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
+            }
+            else
+            {
+                for (int i = _animsPrimary.Length - 1; i >= 0; i--)
+                {
+                    Animation anim = _animsPrimary[i];
+
+                    if (anim == null)
+                        continue;
+
+                    anim[primaryAnimationName].normalizedTime = deploy;
+                    _primaryAnimTime = deploy;
+                    anim[primaryAnimationName].speed = 0;
+                    anim.Blend(primaryAnimationName);
+                }
+
+                primaryAnimationState = ModuleAnimateGeneric.animationStates.CLAMPED;
+
+                SetDragCubes(1 - _primaryAnimTime);
+
+                if (primaryDeployLimit == 0)
+                {
+                    primaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
+                    status = _localizedLocked;
+
+                    primaryDeployed = false;
+
+                    tglActionPrimary.guiName = _localizedPrimaryStartString;
+                    tglEventPrimary.guiName = _localizedPrimaryStartString;
+
+                    if (!string.IsNullOrEmpty(primaryToggleActionName))
+                        tglActionPrimary.guiName = _localizedPrimaryActionString;
+
+                    if (!secondaryDeployed)
+                    {
+                        combinedDeployed = false;
+
+                        tglActionCombined.guiName = _localizedCombinedStartString;
+                        tglEventCombined.guiName = _localizedCombinedStartString;
+
+                        if (!string.IsNullOrEmpty(combinedToggleActionName))
+                            tglActionCombined.guiName = _localizedCombinedToggleString;
+                    }
+                }
+                else
+                {
+                    primaryDeployed = true;
+
+                    tglActionPrimary.guiName = _localizedPrimaryEndString;
+                    tglEventPrimary.guiName = _localizedPrimaryEndString;
+
+                    if (!string.IsNullOrEmpty(primaryToggleActionName))
+                        tglActionPrimary.guiName = _localizedPrimaryActionString;
+
+                    if (secondaryDeployed)
+                    {
+                        combinedDeployed = true;
+
+                        tglActionCombined.guiName = _localizedCombinedEndString;
+                        tglEventCombined.guiName = _localizedCombinedEndString;
+
+                        if (!string.IsNullOrEmpty(combinedToggleActionName))
+                            tglActionCombined.guiName = _localizedCombinedToggleString;
+                    }
+                }
+            }
+        }
+
+        private void OnSecondaryDeployChange(BaseField field, object obj)
+        {
+            if (HighLogic.LoadedSceneIsFlight)
+                return;
+
+            float deploy = secondaryDeployLimit * 0.01f;
+
+            if (_animsSecondary == null)
+            {
+                secondaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
+            }
+            else
+            {
+                for (int i = _animsSecondary.Length - 1; i >= 0; i--)
+                {
+                    Animation anim = _animsSecondary[i];
+
+                    if (anim == null)
+                        continue;
+
+                    anim[secondaryAnimationName].normalizedTime = deploy;
+                    _secondaryAnimTime = deploy;
+                    anim[secondaryAnimationName].speed = 0;
+                    anim.Blend(secondaryAnimationName);
+                }
+
+                secondaryAnimationState = ModuleAnimateGeneric.animationStates.CLAMPED;
+
+                SetDragCubes(1 - _secondaryAnimTime);
+
+                if (primaryDeployLimit == 0)
+                {
+                    secondaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
+                    status = _localizedLocked;
+
+                    secondaryDeployed = false;
+
+                    tglActionSecondary.guiName = _localizedSecondaryStartString;
+                    tglEventSecondary.guiName = _localizedSecondaryStartString;
+
+                    if (!string.IsNullOrEmpty(secondaryToggleActionName))
+                        tglActionSecondary.guiName = _localizedSecondaryActionString;
+
+                    if (!primaryDeployed)
+                    {
+                        combinedDeployed = false;
+
+                        tglActionCombined.guiName = _localizedCombinedStartString;
+                        tglEventCombined.guiName = _localizedCombinedStartString;
+
+                        if (!string.IsNullOrEmpty(combinedToggleActionName))
+                            tglActionCombined.guiName = _localizedCombinedToggleString;
+                    }
+                }
+                else
+                {
+                    secondaryDeployed = true;
+
+                    tglActionSecondary.guiName = _localizedSecondaryEndString;
+                    tglEventSecondary.guiName = _localizedSecondaryEndString;
+
+                    if (!string.IsNullOrEmpty(secondaryToggleActionName))
+                        tglActionSecondary.guiName = _localizedPrimaryActionString;
+
+                    if (primaryDeployed)
+                    {
+                        combinedDeployed = true;
+
+                        tglActionCombined.guiName = _localizedCombinedEndString;
+                        tglEventCombined.guiName = _localizedCombinedEndString;
+
+                        if (!string.IsNullOrEmpty(combinedToggleActionName))
+                            tglActionCombined.guiName = _localizedCombinedToggleString;
+                    }
+                }
+            }
+        }
+
         private void onSwitch(int index, int selection, Part p)
         {
             if (p != part)
@@ -760,16 +1041,16 @@ namespace UniversalStorage
                 return;
 
             if (_PrimaryObstructionLengths != null && _PrimaryObstructionLengths.Length > CurrentSelection)
-                _PrimaryObstructionLength = (float)_PrimaryObstructionLengths[CurrentSelection];
+                PrimaryObstructionLength = (float)_PrimaryObstructionLengths[CurrentSelection];
 
             if (_SecondaryObstructionLengths != null && _SecondaryObstructionLengths.Length > CurrentSelection)
-                _SecondaryObstructionLength = (float)_SecondaryObstructionLengths[CurrentSelection];
+                SecondaryObstructionLength = (float)_SecondaryObstructionLengths[CurrentSelection];
+            
+            if (_PrimaryObstructionSources != null && ObstructionDebugLines)
+                DrawCollisionLines(_PrimaryObstructionSources, PrimaryObstructionLength, Color.blue);
 
-            if (_PrimaryObstructionSources != null)
-                DrawCollisionLines(_PrimaryObstructionSources, _PrimaryObstructionLength, Color.blue);
-
-            if (_SecondaryObstructionSources != null)
-                DrawCollisionLines(_SecondaryObstructionSources, _SecondaryObstructionLength, Color.red);
+            if (_SecondaryObstructionSources != null && ObstructionDebugLines)
+                DrawCollisionLines(_SecondaryObstructionSources, SecondaryObstructionLength, Color.red);
         }
         
         [KSPAction("Jettison Doors")]
@@ -798,6 +1079,8 @@ namespace UniversalStorage
 
             lockPrimaryDoors = !lockPrimaryDoors;
 
+            primaryLimit.guiActiveEditor = !lockPrimaryDoors;
+
             lockEventPrimary.guiName = lockPrimaryDoors ? _localizedPrimaryUnlockString : _localizedPrimaryLockString;
 
             tglEventPrimary.active = !lockPrimaryDoors && (primaryAvailableInVessel || primaryAvailableInEVA || primaryAvailableInEditor);
@@ -816,6 +1099,8 @@ namespace UniversalStorage
                 return;
 
             lockSecondaryDoors = !lockSecondaryDoors;
+
+            secondaryLimit.guiActiveEditor = !lockSecondaryDoors;
 
             lockEventSecondary.guiName = lockSecondaryDoors ? _localizedSecondaryUnlockString : _localizedSecondaryLockString;
 
@@ -848,10 +1133,13 @@ namespace UniversalStorage
 					tglActionPrimary.guiName = _localizedPrimaryEndString;
 					tglEventPrimary.guiName = _localizedPrimaryEndString;
 
-					if (!string.IsNullOrEmpty(primaryToggleActionName))
+                    if (!string.IsNullOrEmpty(primaryToggleActionName))
 						tglActionPrimary.guiName = _localizedPrimaryActionString;
 
-					if (_animsPrimary != null)
+                    primaryLimit.guiActiveEditor = false;
+                    primaryLimit.guiActive = false;
+
+                    if (_animsPrimary != null)
 					{
 						for (int i = _animsPrimary.Length - 1; i >= 0; i--)
 							animate(_animsPrimary[i], primaryAnimationName, _animSpeed, 0);
@@ -869,7 +1157,10 @@ namespace UniversalStorage
 					if (!string.IsNullOrEmpty(secondaryToggleActionName))
 						tglActionSecondary.guiName = _localizedSecondaryActionString;
 
-					if (_animsSecondary != null)
+                    secondaryLimit.guiActiveEditor = false;
+                    secondaryLimit.guiActive = false;
+
+                    if (_animsSecondary != null)
 					{
 						for (int i = _animsSecondary.Length - 1; i >= 0; i--)
 							animate(_animsSecondary[i], secondaryAnimationName, _animSpeed, 0);
@@ -910,10 +1201,13 @@ namespace UniversalStorage
                         if (!string.IsNullOrEmpty(primaryToggleActionName))
                             tglActionPrimary.guiName = _localizedPrimaryActionString;
 
+                        primaryLimit.guiActiveEditor = false;
+                        primaryLimit.guiActive = false;
+
                         if (_animsPrimary != null)
                         {
                             for (int i = _animsPrimary.Length - 1; i >= 0; i--)
-                                animate(_animsPrimary[i], primaryAnimationName, _animSpeed * -1f, 1);
+                                animate(_animsPrimary[i], primaryAnimationName, _animSpeed * -1f, primaryDeployLimit * 0.01f);
                         }
 
                         primaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
@@ -942,10 +1236,13 @@ namespace UniversalStorage
                         if (!string.IsNullOrEmpty(secondaryToggleActionName))
                             tglActionSecondary.guiName = _localizedSecondaryActionString;
 
+                        secondaryLimit.guiActiveEditor = false;
+                        secondaryLimit.guiActive = false;
+
                         if (_animsSecondary != null)
                         {
                             for (int i = _animsSecondary.Length - 1; i >= 0; i--)
-                                animate(_animsSecondary[i], secondaryAnimationName, _animSpeed * -1f, 1);
+                                animate(_animsSecondary[i], secondaryAnimationName, _animSpeed * -1f, secondaryDeployLimit * 0.01f);
                         }
 
                         secondaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
@@ -1002,10 +1299,13 @@ namespace UniversalStorage
 				if (!string.IsNullOrEmpty(primaryToggleActionName))
 					tglActionPrimary.guiName = _localizedPrimaryActionString;
 
-				if (_animsPrimary != null)
+                primaryLimit.guiActiveEditor = false;
+                primaryLimit.guiActive = false;
+
+                if (_animsPrimary != null)
 				{
 					for (int i = _animsPrimary.Length - 1; i >= 0; i--)
-						animate(_animsPrimary[i], primaryAnimationName, _animSpeed * -1f, 1);
+						animate(_animsPrimary[i], primaryAnimationName, _animSpeed * -1f, primaryDeployLimit * 0.01f);
 
 					onMove.Fire(1, 0);
 				}
@@ -1030,7 +1330,10 @@ namespace UniversalStorage
 				if (!string.IsNullOrEmpty(primaryToggleActionName))
 					tglActionPrimary.guiName = _localizedPrimaryActionString;
 
-				if (_animsPrimary != null)
+                primaryLimit.guiActiveEditor = false;
+                primaryLimit.guiActive = false;
+
+                if (_animsPrimary != null)
 				{
 					for (int i = _animsPrimary.Length - 1; i >= 0; i--)
 						animate(_animsPrimary[i], primaryAnimationName, _animSpeed, 0);
@@ -1091,10 +1394,13 @@ namespace UniversalStorage
 				if (!string.IsNullOrEmpty(secondaryToggleActionName))
 					tglActionSecondary.guiName = _localizedSecondaryActionString;
 
-				if (_animsSecondary != null)
+                secondaryLimit.guiActiveEditor = false;
+                secondaryLimit.guiActive = false;
+
+                if (_animsSecondary != null)
 				{
 					for (int i = _animsSecondary.Length - 1; i >= 0; i--)
-						animate(_animsSecondary[i], secondaryAnimationName, _animSpeed * -1f, 1);
+						animate(_animsSecondary[i], secondaryAnimationName, _animSpeed * -1f, secondaryDeployLimit * 0.01f);
 
 					onMove.Fire(1, 0);
 				}
@@ -1119,7 +1425,10 @@ namespace UniversalStorage
 				if (!string.IsNullOrEmpty(secondaryToggleActionName))
 					tglActionSecondary.guiName = _localizedSecondaryActionString;
 
-				if (_animsSecondary != null)
+                secondaryLimit.guiActiveEditor = false;
+                secondaryLimit.guiActive = false;
+
+                if (_animsSecondary != null)
 				{
 					for (int i = _animsSecondary.Length - 1; i >= 0; i--)
 						animate(_animsSecondary[i], secondaryAnimationName, _animSpeed, 0);
@@ -1146,7 +1455,7 @@ namespace UniversalStorage
                 return false;
 
             if (ObstructionDebugLines)
-                DrawCollisionLines(_PrimaryObstructionSources, _PrimaryObstructionLength, Color.blue);
+                DrawCollisionLines(_PrimaryObstructionSources, PrimaryObstructionLength, Color.blue);
 
             debug.debugMessage("Testing for primary door collisions before closing...");
 
@@ -1157,7 +1466,7 @@ namespace UniversalStorage
                 Ray r = new Ray(source.position, source.forward);
                 RaycastHit hit = new RaycastHit();
 
-                if (Physics.Raycast(r, out hit, _PrimaryObstructionLength, 1 << 0))
+                if (Physics.Raycast(r, out hit, PrimaryObstructionLength, 1 << 0))
                 {
                     if (hit.collider != null)
                     {
@@ -1167,7 +1476,7 @@ namespace UniversalStorage
 
                             if (p != null)
                             {
-                                ScreenMessages.PostScreenMessage("Obstruction detected in primary bay doors. Please clear objects before closing.", 4f, ScreenMessageStyle.UPPER_CENTER);
+                                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_PrimaryBayObstruction", p.partInfo.title, part.partInfo.title), 4f, ScreenMessageStyle.UPPER_CENTER);
                                 debug.debugMessage(string.Format("Primary door obstruction detected; stopping animation: {0}", p.partName));
                                 return true;
                             }
@@ -1185,7 +1494,7 @@ namespace UniversalStorage
                 return false;
 
             if (ObstructionDebugLines)
-                DrawCollisionLines(_SecondaryObstructionSources, _SecondaryObstructionLength, Color.red);
+                DrawCollisionLines(_SecondaryObstructionSources, SecondaryObstructionLength, Color.red);
 
             debug.debugMessage("Testing for secondary door collisions before closing...");
 
@@ -1196,7 +1505,7 @@ namespace UniversalStorage
                 Ray r = new Ray(source.position, source.forward);
                 RaycastHit hit = new RaycastHit();
 
-                if (Physics.Raycast(r, out hit, _SecondaryObstructionLength, 1 << 0))
+                if (Physics.Raycast(r, out hit, SecondaryObstructionLength, 1 << 0))
                 {
                     if (hit.collider != null)
                     {
@@ -1206,7 +1515,7 @@ namespace UniversalStorage
 
                             if (p != null)
                             {
-                                ScreenMessages.PostScreenMessage("Obstruction detected in secondary bay doors. Please clear objects before closing.", 4f, ScreenMessageStyle.UPPER_CENTER);
+                                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_SecondaryBayObstruction", p.partInfo.title, part.partInfo.title), 4f, ScreenMessageStyle.UPPER_CENTER);
                                 debug.debugMessage(string.Format("Secondary door obstruction detected; stopping animation: {0}", p.partName));
                                 return true;
                             }
@@ -1222,6 +1531,8 @@ namespace UniversalStorage
         {
             if (sources == null)
                 return;
+
+            debug.debugMessage("drawing door collisions test lines");
 
             for (int i = sources.Length - 1; i >= 0; i--)
             {
@@ -1377,7 +1688,10 @@ namespace UniversalStorage
 			{
 				primaryDeployed = t > 0;
 
-				for (int i = _animsPrimary.Length - 1; i >= 0; i--)
+                primaryLimit.guiActiveEditor = false;
+                primaryLimit.guiActive = false;
+
+                for (int i = _animsPrimary.Length - 1; i >= 0; i--)
 				{
 					Animation anim = _animsPrimary[i];
 
@@ -1401,7 +1715,10 @@ namespace UniversalStorage
 			{
 				secondaryDeployed = t > 0;
 
-				for (int i = _animsSecondary.Length - 1; i >= 0; i--)
+                secondaryLimit.guiActiveEditor = false;
+                secondaryLimit.guiActive = false;
+
+                for (int i = _animsSecondary.Length - 1; i >= 0; i--)
 				{
 					Animation anim = _animsSecondary[i];
 
@@ -1440,7 +1757,10 @@ namespace UniversalStorage
 						tglEventPrimary.guiName = _localizedPrimaryEndString;
 						tglEventPrimary.guiActive = primaryAvailableInVessel;
 					}
-				}
+
+                    primaryLimit.guiActiveEditor = true;
+                    primaryLimit.guiActive = primaryDeployLimitInFlight;
+                }
 
 				if (secondary)
 				{
@@ -1456,7 +1776,10 @@ namespace UniversalStorage
 						tglEventSecondary.guiName = _localizedSecondaryEndString;
 						tglEventSecondary.guiActive = secondaryAvailableInVessel;
 					}
-				}
+
+                    secondaryLimit.guiActiveEditor = true;
+                    secondaryLimit.guiActive = secondaryDeployLimitInFlight;
+                }
 			}
 			else if (Mathf.Abs(t) < 0.01f)
 			{
@@ -1466,7 +1789,10 @@ namespace UniversalStorage
 					primaryDeployed = false;
 					tglEventPrimary.guiName = _localizedPrimaryStartString;
 					tglEventPrimary.guiActive = primaryAvailableInVessel;
-				}
+
+                    primaryLimit.guiActiveEditor = true;
+                    primaryLimit.guiActive = primaryDeployLimitInFlight;
+                }
 
 				if (secondary)
 				{
@@ -1474,7 +1800,10 @@ namespace UniversalStorage
 					secondaryDeployed = false;
 					tglEventSecondary.guiName = _localizedSecondaryStartString;
 					tglEventSecondary.guiActive = secondaryAvailableInVessel;
-				}
+
+                    secondaryLimit.guiActiveEditor = true;
+                    secondaryLimit.guiActive = secondaryDeployLimitInFlight;
+                }
 			}
 			else
 			{
