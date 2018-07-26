@@ -51,11 +51,15 @@ namespace UniversalStorage
         [KSPField]
         public string primaryDeployLimitName = "Primary Bay Deploy Limit";
         [KSPField]
+        public bool allowPrimaryDeployLimit = true;
+        [KSPField]
         public bool primaryDeployLimitInFlight = false;
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true), UI_FloatRange(minValue = 0, maxValue = 100, stepIncrement = 1)]
         public float secondaryDeployLimit = 100;
         [KSPField]
         public string secondaryDeployLimitName = "Secondary Bay Deploy Limit";
+        [KSPField]
+        public bool allowSecondaryDeployLimit = true;
         [KSPField]
         public bool secondaryDeployLimitInFlight = false;
         [KSPField]
@@ -503,8 +507,8 @@ namespace UniversalStorage
                 tglActionCombined.guiName = "Toggle All (Disabled)";
             }
             
-            primaryLimit.guiActiveEditor = !(allowDoorLock && lockPrimaryDoors) && _animsPrimary != null;
-            primaryLimit.guiActive = !(allowDoorLock && lockPrimaryDoors) && primaryDeployLimitInFlight && _animsPrimary != null;
+            primaryLimit.guiActiveEditor = allowPrimaryDeployLimit && !(allowDoorLock && lockPrimaryDoors) && _animsPrimary != null;
+            primaryLimit.guiActive = allowSecondaryDeployLimit && !(allowDoorLock && lockPrimaryDoors) && primaryDeployLimitInFlight && _animsPrimary != null;
             
             secondaryLimit.guiActiveEditor = !(allowDoorLock && lockSecondaryDoors) && _animsSecondary != null;
             secondaryLimit.guiActive = !(allowDoorLock && lockSecondaryDoors) && secondaryDeployLimitInFlight && _animsSecondary != null;
