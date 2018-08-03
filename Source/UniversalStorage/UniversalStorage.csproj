@@ -65,6 +65,7 @@
     <Compile Include="SwitchModules\USMeshSwitch.cs" />
     <Compile Include="SwitchModules\USNodeSwitch.cs" />
     <Compile Include="USModuleGreeble.cs" />
+    <Compile Include="USModuleHideStuff.cs" />
     <Compile Include="USModuleStructuralNode.cs" />
     <Compile Include="USReactionWheel.cs" />
     <Compile Include="USResource.cs" />

@@ -125,11 +125,7 @@ namespace UniversalStorage
         [KSPField]
         public string PrimaryDoorObstructionLength = string.Empty;
         [KSPField]
-        public float PrimaryObstructionLength = 0;
-        [KSPField]
         public string SecondaryDoorObstructionLength = string.Empty;
-        [KSPField]
-        public float SecondaryObstructionLength = 0;
         [KSPField]
         public bool ObstructionDebugLines = false;
         [KSPField(isPersistant = true)]
@@ -186,6 +182,10 @@ namespace UniversalStorage
         
         private double[] _PrimaryObstructionLengths;
         private double[] _SecondaryObstructionLengths;
+
+        private float _primaryObstructionLength;
+        private float _secondaryObstructionLength;
+
         private Transform[] _PrimaryObstructionSources;
         private Transform[] _SecondaryObstructionSources;
         
@@ -524,10 +524,20 @@ namespace UniversalStorage
             debug.debugMessage("Searching For Door Obstructors...");
 
             if (!String.IsNullOrEmpty(PrimaryDoorObstructionLength))
+            {
                 _PrimaryObstructionLengths = USTools.parseDoubles(PrimaryDoorObstructionLength).ToArray();
-            
+
+                if (_PrimaryObstructionLengths.Length == 1 || _SwitchIndices == null || _SwitchIndices.Length == 0 || CurrentSelection < 0)
+                    _primaryObstructionLength = (float)_PrimaryObstructionLengths[0];
+            }
+
             if (!String.IsNullOrEmpty(SecondaryDoorObstructionLength))
+            {
                 _SecondaryObstructionLengths = USTools.parseDoubles(SecondaryDoorObstructionLength).ToArray();
+
+                if (_SecondaryObstructionLengths.Length == 1 || _SwitchIndices == null || _SwitchIndices.Length == 0 || CurrentSelection < 0)
+                    _secondaryObstructionLength = (float)_SecondaryObstructionLengths[0];
+            }
 
             if (!String.IsNullOrEmpty(PrimaryDoorObstructionSource))
                 _PrimaryObstructionSources = part.FindModelTransforms(PrimaryDoorObstructionSource);
@@ -645,7 +655,7 @@ namespace UniversalStorage
 								else
 									_primaryAnimTime = 0;
                                 
-                                primaryLimit.guiActiveEditor = true;
+                                primaryLimit.guiActiveEditor = allowPrimaryDeployLimit;
                                 primaryLimit.guiActive = primaryDeployLimitInFlight;
 
                                 anim[primaryAnimationName].normalizedTime = _primaryAnimTime;
@@ -737,7 +747,7 @@ namespace UniversalStorage
 								else
 									_secondaryAnimTime = 0;
 
-                                secondaryLimit.guiActiveEditor = true;
+                                secondaryLimit.guiActiveEditor = allowSecondaryDeployLimit;
                                 secondaryLimit.guiActive = secondaryDeployLimitInFlight;
 
                                 anim[secondaryAnimationName].normalizedTime = _secondaryAnimTime;
@@ -1045,16 +1055,16 @@ namespace UniversalStorage
                 return;
 
             if (_PrimaryObstructionLengths != null && _PrimaryObstructionLengths.Length > CurrentSelection)
-                PrimaryObstructionLength = (float)_PrimaryObstructionLengths[CurrentSelection];
+                _primaryObstructionLength = (float)_PrimaryObstructionLengths[CurrentSelection];
 
             if (_SecondaryObstructionLengths != null && _SecondaryObstructionLengths.Length > CurrentSelection)
-                SecondaryObstructionLength = (float)_SecondaryObstructionLengths[CurrentSelection];
+                _secondaryObstructionLength = (float)_SecondaryObstructionLengths[CurrentSelection];
             
             if (_PrimaryObstructionSources != null && ObstructionDebugLines)
-                DrawCollisionLines(_PrimaryObstructionSources, PrimaryObstructionLength, Color.blue);
+                DrawCollisionLines(_PrimaryObstructionSources, _primaryObstructionLength, Color.blue);
 
             if (_SecondaryObstructionSources != null && ObstructionDebugLines)
-                DrawCollisionLines(_SecondaryObstructionSources, SecondaryObstructionLength, Color.red);
+                DrawCollisionLines(_SecondaryObstructionSources, _secondaryObstructionLength, Color.red);
         }
         
         [KSPAction("Jettison Doors")]
@@ -1459,7 +1469,7 @@ namespace UniversalStorage
                 return false;
 
             if (ObstructionDebugLines)
-                DrawCollisionLines(_PrimaryObstructionSources, PrimaryObstructionLength, Color.blue);
+                DrawCollisionLines(_PrimaryObstructionSources, _primaryObstructionLength, Color.blue);
 
             debug.debugMessage("Testing for primary door collisions before closing...");
 
@@ -1470,7 +1480,7 @@ namespace UniversalStorage
                 Ray r = new Ray(source.position, source.forward);
                 RaycastHit hit = new RaycastHit();
 
-                if (Physics.Raycast(r, out hit, PrimaryObstructionLength, 1 << 0))
+                if (Physics.Raycast(r, out hit, _primaryObstructionLength, 1 << 0))
                 {
                     if (hit.collider != null)
                     {
@@ -1498,7 +1508,7 @@ namespace UniversalStorage
                 return false;
 
             if (ObstructionDebugLines)
-                DrawCollisionLines(_SecondaryObstructionSources, SecondaryObstructionLength, Color.red);
+                DrawCollisionLines(_SecondaryObstructionSources, _secondaryObstructionLength, Color.red);
 
             debug.debugMessage("Testing for secondary door collisions before closing...");
 
@@ -1509,7 +1519,7 @@ namespace UniversalStorage
                 Ray r = new Ray(source.position, source.forward);
                 RaycastHit hit = new RaycastHit();
 
-                if (Physics.Raycast(r, out hit, SecondaryObstructionLength, 1 << 0))
+                if (Physics.Raycast(r, out hit, _secondaryObstructionLength, 1 << 0))
                 {
                     if (hit.collider != null)
                     {
@@ -1762,7 +1772,7 @@ namespace UniversalStorage
 						tglEventPrimary.guiActive = primaryAvailableInVessel;
 					}
 
-                    primaryLimit.guiActiveEditor = true;
+                    primaryLimit.guiActiveEditor = allowPrimaryDeployLimit;
                     primaryLimit.guiActive = primaryDeployLimitInFlight;
                 }
 
@@ -1781,7 +1791,7 @@ namespace UniversalStorage
 						tglEventSecondary.guiActive = secondaryAvailableInVessel;
 					}
 
-                    secondaryLimit.guiActiveEditor = true;
+                    secondaryLimit.guiActiveEditor = allowSecondaryDeployLimit;
                     secondaryLimit.guiActive = secondaryDeployLimitInFlight;
                 }
 			}
@@ -1794,7 +1804,7 @@ namespace UniversalStorage
 					tglEventPrimary.guiName = _localizedPrimaryStartString;
 					tglEventPrimary.guiActive = primaryAvailableInVessel;
 
-                    primaryLimit.guiActiveEditor = true;
+                    primaryLimit.guiActiveEditor = allowPrimaryDeployLimit;
                     primaryLimit.guiActive = primaryDeployLimitInFlight;
                 }
 
@@ -1805,7 +1815,7 @@ namespace UniversalStorage
 					tglEventSecondary.guiName = _localizedSecondaryStartString;
 					tglEventSecondary.guiActive = secondaryAvailableInVessel;
 
-                    secondaryLimit.guiActiveEditor = true;
+                    secondaryLimit.guiActiveEditor = allowSecondaryDeployLimit;
                     secondaryLimit.guiActive = secondaryDeployLimitInFlight;
                 }
 			}
