@@ -329,10 +329,10 @@ namespace UniversalStorage
             if (!string.IsNullOrEmpty(secondaryAnimationName))
                 _animsSecondary = part.FindModelAnimators(secondaryAnimationName);
 
-            if (_animsPrimary != null)
+            if (_animsPrimary != null && DebugMode)
                 debug.debugMessage("[US_Anim] Primary Animations found: " + _animsPrimary.Length);
 
-            if (_animsSecondary != null)
+            if (_animsSecondary != null && DebugMode)
                 debug.debugMessage("[US_Anim] Secondary Animations found: " + _animsPrimary.Length);
             
             if (_animsPrimary != null && _animsPrimary.Length > 0)
@@ -372,7 +372,8 @@ namespace UniversalStorage
                     if (anim == null)
                         continue;
 
-                    debug.debugMessage(string.Format("Primary Animation Clips: {0} - Name: {1}", anim.GetClipCount(), anim.clip.name));
+                    if (DebugMode)
+                        debug.debugMessage(string.Format("Primary Animation Clips: {0} - Name: {1}", anim.GetClipCount(), anim.clip.name));
 
                     anim.playAutomatically = false;
                     anim.cullingType = AnimationCullingType.BasedOnRenderers;
@@ -380,9 +381,7 @@ namespace UniversalStorage
 
                     if (!anim.gameObject.activeInHierarchy)
                         continue;
-
-                    //animate(anim, primaryAnimationName, 0, _primaryAnimTime);
-
+                    
                     anim[primaryAnimationName].normalizedTime = _primaryAnimTime;
                     anim[primaryAnimationName].enabled = true;
                     anim[primaryAnimationName].speed = 0;
@@ -448,7 +447,8 @@ namespace UniversalStorage
                     if (anim == null)
                         continue;
 
-                    debug.debugMessage(string.Format("Secondary Animation Clips: {0} - Name: {1}", anim.GetClipCount(), anim.clip.name));
+                    if (DebugMode)
+                        debug.debugMessage(string.Format("Secondary Animation Clips: {0} - Name: {1}", anim.GetClipCount(), anim.clip.name));
 
                     anim.playAutomatically = false;
                     anim.cullingType = AnimationCullingType.BasedOnRenderers;
@@ -521,7 +521,8 @@ namespace UniversalStorage
             if (!UseDoorObstructions)
                 return;
 
-            debug.debugMessage("Searching For Door Obstructors...");
+            if (DebugMode)
+                debug.debugMessage("Searching For Door Obstructors...");
 
             if (!String.IsNullOrEmpty(PrimaryDoorObstructionLength))
             {
@@ -547,17 +548,6 @@ namespace UniversalStorage
             
             if (CurrentSelection >= 0)
                 UpdateCollisionLength();
-
-            //var triggers = part.FindModelTransforms(DoorObstructionTrigger);
-
-            //for (int i = triggers.Length - 1; i >= 0; i--)
-            //{
-            //    GameObject obj = triggers[i].gameObject;
-
-            //    var trigger = triggers[i].gameObject.AddComponent<USDoorTrigger>();
-
-            //    trigger.Init(this);
-            //}
         }
         
         private void AssignJettisonModules()
@@ -577,45 +567,7 @@ namespace UniversalStorage
                     jettisonModules[i] = part.Modules[index] as USJettisonSwitch;
             }
         }
-
-		//private void LateUpdate()
-		//{
-		//	if (!_primaryAnimStarted && !_secondaryAnimStarted)
-		//		return;
-
-		//	if (_primaryAnimStarted)
-		//	{
-		//		for (int i = _animsPrimary.Length - 1; i >= 0; i--)
-		//		{
-		//			Animation anim = _animsPrimary[i];
-
-		//			if (anim == null)
-		//				continue;
-		//			debug.debugMessage(string.Format("Primary Animation stopped"));
-		//			anim[primaryAnimationName].enabled = false;
-		//			anim.Stop(primaryAnimationName);
-		//		}
-
-		//		_primaryAnimStarted = false;
-		//	}
-
-		//	if (_secondaryAnimStarted)
-		//	{
-		//		for (int i = _animsSecondary.Length - 1; i >= 0; i--)
-		//		{
-		//			Animation anim = _animsSecondary[i];
-
-		//			if (anim == null)
-		//				continue;
-		//			debug.debugMessage(string.Format("Secondary Animation stopped"));
-		//			anim[secondaryAnimationName].enabled = false;
-		//			anim.Stop(secondaryAnimationName);
-		//		}
-
-		//		_secondaryAnimStarted = false;
-		//	}
-		//}
-
+        
 		private void FixedUpdate()
 		{
 			if (!HighLogic.LoadedSceneIsFlight && !HighLogic.LoadedSceneIsEditor)
@@ -640,8 +592,10 @@ namespace UniversalStorage
 						{
 							if (!anim.IsPlaying(primaryAnimationName))
 							{
-								debug.debugMessage(string.Format("Forcing Animation Stop: {0} - Time: {1:F2}", primaryAnimationName, anim[primaryAnimationName].normalizedTime));
-								if (oneShot)
+                                if (DebugMode)
+                                    debug.debugMessage(string.Format("Forcing Animation Stop: {0} - Time: {1:F2}", primaryAnimationName, anim[primaryAnimationName].normalizedTime));
+
+                                if (oneShot)
 								{
 									primaryAnimationState = ModuleAnimateGeneric.animationStates.FIXED;
 								}
@@ -698,15 +652,6 @@ namespace UniversalStorage
                                 }
 							}
 						}
-                        //else
-                        //{
-                        //    if (_primaryDeployReached)
-                        //    {
-                        //        anim[primaryAnimationName].normalizedTime = _primaryAnimTime;
-                        //        anim[primaryAnimationName].speed = 0;
-                        //        anim.Stop(primaryAnimationName);
-                        //    }
-                        //}
 					}
 
                     _primaryDeployReached = false;
@@ -732,8 +677,10 @@ namespace UniversalStorage
 						{
 							if (!anim.IsPlaying(secondaryAnimationName))
 							{
-								debug.debugMessage(string.Format("Forcing Animation Stop: {0} - Time: {1:F2}", secondaryAnimationName, anim[secondaryAnimationName].normalizedTime));
-								if (oneShot)
+                                if (DebugMode)
+                                    debug.debugMessage(string.Format("Forcing Animation Stop: {0} - Time: {1:F2}", secondaryAnimationName, anim[secondaryAnimationName].normalizedTime));
+
+                                if (oneShot)
 								{
 									secondaryAnimationState = ModuleAnimateGeneric.animationStates.FIXED;
 								}
@@ -986,7 +933,8 @@ namespace UniversalStorage
             {
                 if (_SwitchIndices[i] == index)
                 {
-                    debug.debugMessage(string.Format("On Switch - Index: {0}", selection));
+                    if (DebugMode)
+                        debug.debugMessage(string.Format("On Switch - Index: {0}", selection));
 
                     CurrentSelection = selection;
 
@@ -1471,7 +1419,8 @@ namespace UniversalStorage
             if (ObstructionDebugLines)
                 DrawCollisionLines(_PrimaryObstructionSources, _primaryObstructionLength, Color.blue);
 
-            debug.debugMessage("Testing for primary door collisions before closing...");
+            if (DebugMode)
+                debug.debugMessage("Testing for primary door collisions before closing...");
 
             for (int i = _PrimaryObstructionSources.Length - 1; i >= 0; i--)
             {
@@ -1491,7 +1440,10 @@ namespace UniversalStorage
                             if (p != null)
                             {
                                 ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_PrimaryBayObstruction", p.partInfo.title, part.partInfo.title), 4f, ScreenMessageStyle.UPPER_CENTER);
-                                debug.debugMessage(string.Format("Primary door obstruction detected; stopping animation: {0}", p.partName));
+
+                                if (DebugMode)
+                                    debug.debugMessage(string.Format("Primary door obstruction detected; stopping animation: {0}", p.partName));
+
                                 return true;
                             }
                         }
@@ -1510,7 +1462,8 @@ namespace UniversalStorage
             if (ObstructionDebugLines)
                 DrawCollisionLines(_SecondaryObstructionSources, _secondaryObstructionLength, Color.red);
 
-            debug.debugMessage("Testing for secondary door collisions before closing...");
+            if (DebugMode)
+                debug.debugMessage("Testing for secondary door collisions before closing...");
 
             for (int i = _SecondaryObstructionSources.Length - 1; i >= 0; i--)
             {
@@ -1530,7 +1483,10 @@ namespace UniversalStorage
                             if (p != null)
                             {
                                 ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_SecondaryBayObstruction", p.partInfo.title, part.partInfo.title), 4f, ScreenMessageStyle.UPPER_CENTER);
-                                debug.debugMessage(string.Format("Secondary door obstruction detected; stopping animation: {0}", p.partName));
+
+                                if (DebugMode)
+                                    debug.debugMessage(string.Format("Secondary door obstruction detected; stopping animation: {0}", p.partName));
+
                                 return true;
                             }
                         }
@@ -1546,7 +1502,8 @@ namespace UniversalStorage
             if (sources == null)
                 return;
 
-            debug.debugMessage("drawing door collisions test lines");
+            if (DebugMode)
+                debug.debugMessage("drawing door collisions test lines");
 
             for (int i = sources.Length - 1; i >= 0; i--)
             {
@@ -1558,7 +1515,7 @@ namespace UniversalStorage
                 lr.endColor = c * 0.3f;
                 lr.startWidth = 0.03f;
                 lr.endWidth = 0.01f;
-                    
+
                 Vector3 end = sources[i].position + (sources[i].forward * length);
 
                 //debug.debugMessage(string.Format("Debug Line: {0} Start: {1:N3} - End: {2:N3}"
@@ -1578,15 +1535,19 @@ namespace UniversalStorage
 			if (anim[animationName] == null)
 				return;
 
-			debug.debugMessage(string.Format("Animation Play: Speed {0:F2} - Time: {1:F2}", speed, time));
+            if (DebugMode)
+                debug.debugMessage(string.Format("Animation Play: Speed {0:F2} - Time: {1:F2}", speed, time));
 
 			anim[animationName].speed = speed;
 
 			if (!anim.IsPlaying(animationName))
 			{
 				anim[animationName].enabled = true;
-				debug.debugMessage(string.Format("Starting Animation: {0} - Time: {1:F2}", animationName, time));
-				anim[animationName].normalizedTime = time;
+
+                if (DebugMode)
+                    debug.debugMessage(string.Format("Starting Animation: {0} - Time: {1:F2}", animationName, time));
+
+                anim[animationName].normalizedTime = time;
 				anim.Blend(animationName);
 			}
 		}

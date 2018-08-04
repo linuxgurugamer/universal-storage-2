@@ -8,22 +8,6 @@ namespace UniversalStorage
 {
     public static class USTools
     {
-        private const int KSP_MAJOR = 1;
-        private const int KSP_MINOR = 4;
-
-        private static bool _ksp14;
-        private static bool _versionChecked;
-
-        public static bool KSP14
-        {
-            get { return _ksp14; }
-        }
-
-        public static bool VersionChecked
-        {
-            get { return _versionChecked; }
-        }
-
         private static Material _material;
 
         private static int glDepth = 0;
@@ -36,19 +20,7 @@ namespace UniversalStorage
                 return _material;
             }
         }
-
-        public static void KSPVersionCheck()
-        {
-            if (Versioning.version_major < KSP_MAJOR)
-                _ksp14 = false;
-            else if (Versioning.version_minor < KSP_MINOR)
-                _ksp14 = false;
-            else
-                _ksp14 = true;
-
-            _versionChecked = true;
-        }
-
+        
         public static List<int> parseIntegers(string stringOfInts, char sep = ';')
 		{
 			List<int> newIntList = new List<int>();

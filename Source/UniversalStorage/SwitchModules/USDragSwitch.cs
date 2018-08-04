@@ -89,7 +89,8 @@ namespace UniversalStorage
             while (!_Loaded)
                 yield return null;
 
-            debug.debugMessage(string.Format("Updating Drag Cube from animation: {0:N3}", value));
+            if (DebugMode)
+                debug.debugMessage(string.Format("Updating Drag Cube from animation: {0:N3}", value));
 
             if (_DragCubes != null
                             && _DragCubes.Count > CurrentSelection

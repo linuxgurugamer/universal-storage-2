@@ -121,20 +121,23 @@ namespace UniversalStorage
                 yield return null;
             }
 
-            debug.debugMessage("Setting Jettison Transform...");
+            if (DebugMode)
+                debug.debugMessage("Setting Jettison Transform...");
 
             for (int i = _JettisonTransforms.Length - 1; i >= 0; i--)
             {
                 Transform t = _JettisonTransforms[i];
 
-                debug.debugMessage(String.Format("Transform check: {0}", t.name));
+                if (DebugMode)
+                    debug.debugMessage(String.Format("Transform check: {0}", t.name));
 
                 if (!t.gameObject.activeInHierarchy)
                     continue;
 
                 _jettisonTransform = t;
 
-                debug.debugMessage(String.Format("Transform active: {0}", t.name));
+                if (DebugMode)
+                    debug.debugMessage(String.Format("Transform active: {0}", t.name));
 
                 if (_jettisonModule != null)
                     _jettisonModule.jettisonTransform = t;

@@ -133,7 +133,8 @@ namespace UniversalStorage
 
                 _decoupler.Decouple();
 
-                debug.debugMessage("Firing stock Module Decouple");
+                if (DebugMode)
+                    debug.debugMessage("Firing stock Module Decouple");
             }
         }
 

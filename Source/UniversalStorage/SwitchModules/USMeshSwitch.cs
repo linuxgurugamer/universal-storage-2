@@ -44,11 +44,15 @@ namespace UniversalStorage
 
             for (int i = 0; i < _Transforms.Count; i++)
             {
-                debug.debugMessage(string.Format("Mesh Group: {0}", i));
+                if (DebugMode)
+                    debug.debugMessage(string.Format("Mesh Group: {0}", i));
 
-                for (int j = 0; j < _Transforms[i].Count; j++)
+                if (DebugMode)
                 {
-                    debug.debugMessage(string.Format("Mesh Transform: {0}", _Transforms[i][j].name));
+                    for (int j = 0; j < _Transforms[i].Count; j++)
+                    {
+                        debug.debugMessage(string.Format("Mesh Transform: {0}", _Transforms[i][j].name));
+                    }
                 }
             }
 
@@ -62,7 +66,8 @@ namespace UniversalStorage
             if (!HighLogic.LoadedSceneIsFlight || !DeleteUnused)
                 return;
 
-            debug.debugMessage("Deleting unused meshes...");
+            if (DebugMode)
+                debug.debugMessage("Deleting unused meshes...");
 
             for (int i = _Transforms.Count - 1; i >= 0; i--)
             {
@@ -71,7 +76,8 @@ namespace UniversalStorage
 
                 for (int j = _Transforms[i].Count - 1; j >= 0; j--)
                 {
-                    debug.debugMessage(string.Format("Delete: {0}", _Transforms[i][j].name));
+                    if (DebugMode)
+                        debug.debugMessage(string.Format("Delete: {0}", _Transforms[i][j].name));
 
                     _Transforms[i][j].gameObject.SetActive(false);
 
@@ -91,14 +97,19 @@ namespace UniversalStorage
             if (p != part)
                 return;
 
-            debug.debugMessage(string.Format("Switch Received - Index: {0} - Selection: {1} - Part: {2} - Module ID: {3}"
-                , index, selection, p.partInfo.name, SwitchID));
+            if (DebugMode)
+            {
+                debug.debugMessage(string.Format("Switch Received - Index: {0} - Selection: {1} - Part: {2} - Module ID: {3}"
+                  , index, selection, p.partInfo.name, SwitchID));
+            }
 
             for (int i = _SwitchIndices.Length - 1; i >= 0; i--)
             {
                 if (_SwitchIndices[i] == index)
                 {
-                    debug.debugMessage("Mesh switch activated");
+                    if (DebugMode)
+                        debug.debugMessage("Mesh switch activated");
+
                     CurrentSelection = selection;
 
                     UpdateMesh();
@@ -110,11 +121,15 @@ namespace UniversalStorage
 
         private void UpdateMesh()
         {
-            debug.debugMessage(string.Format("Updating Mesh - Selection: {0} - Count: {1}", CurrentSelection, _Transforms.Count));
+            if (DebugMode)
+                debug.debugMessage(string.Format("Updating Mesh - Selection: {0} - Count: {1}", CurrentSelection, _Transforms.Count));
+
             if (_Transforms == null || _Transforms.Count <= CurrentSelection)
                 return;
 
-            debug.debugMessage("Turning off meshes");
+            if (DebugMode)
+                debug.debugMessage("Turning off meshes");
+
             for (int i = _Transforms.Count - 1; i >= 0; i--)
             {
                 for (int j = _Transforms[i].Count - 1; j >= 0; j--)
@@ -133,7 +148,9 @@ namespace UniversalStorage
 
             for (int i = 0; i < _Transforms[CurrentSelection].Count; i++)
             {
-                debug.debugMessage("Activating selected meshes");
+                if (DebugMode)
+                    debug.debugMessage("Activating selected meshes");
+
                 _Transforms[CurrentSelection][i].gameObject.SetActive(true);
 
                 if (AffectColliders)

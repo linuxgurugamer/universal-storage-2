@@ -16,7 +16,7 @@ namespace UniversalStorage
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
         [KSPField]
-        public bool DebugMode = true;
+        public bool DebugMode = false;
 
         private int[] _SwitchIndices;
         private string[] _Fields;
@@ -58,7 +58,8 @@ namespace UniversalStorage
             if (onUSSwitch != null)
                 onUSSwitch.Add(onSwitch);
 
-            debug.debugMessage("US Module Switch Initialized");
+            if (DebugMode)
+                debug.debugMessage("US Module Switch Initialized");
 
             UpdateModule();            
         }
@@ -100,16 +101,14 @@ namespace UniversalStorage
                 if (_Values.Count > i && _Values[i].Count > CurrentSelection)
                 {
                     var field = _TargetModule.Fields[_Fields[i]];
-
-                    //var converter = System.ComponentModel.TypeDescriptor.GetConverter(field.FieldInfo.FieldType.GetElementType());
-
-                    //var converted = converter.ConvertFromString(_Values[CurrentSelection][i]);
-
+                    
                     field.Read(_Values[i][CurrentSelection], _TargetModule);
-
-                    //_TargetModule.Fields.SetValue(_Values[CurrentSelection][i], _Fields[i]);
-                    debug.debugMessage(string.Format("Updating Fields For Target Module: {0}\nTarget Field: {1} - Value: {2}"
-                        , _TargetModule.ClassName, _Fields[i], _Values[i][CurrentSelection]));
+                    
+                    if (DebugMode)
+                    {
+                        debug.debugMessage(string.Format("Updating Fields For Target Module: {0}\nTarget Field: {1} - Value: {2}"
+                          , _TargetModule.ClassName, _Fields[i], _Values[i][CurrentSelection]));
+                    }
                 }
             }
         }

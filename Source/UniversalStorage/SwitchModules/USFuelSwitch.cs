@@ -262,8 +262,6 @@ namespace UniversalStorage
                             onFuelRequestMass.Fire(index, part, this);
 
                         assignResourcesToPart(true);
-
-                        //selectTankSetup(selectedTankModeOne, true);
                     }
                     else
                     {
@@ -276,8 +274,6 @@ namespace UniversalStorage
                             onFuelRequestMass.Fire(index, part, this);
 
                         assignResourcesToPart(true);
-
-                        //selectModeSetup(selectedTankModeTwo, true);
                     }
 
                     break;
@@ -295,36 +291,6 @@ namespace UniversalStorage
             meshMass = mass;
         }
         
-		//public void selectModeSetup(int i, bool calledByPlayer, float cost, float mass)
-		//{
-		//	initializeData();
-
-		//	if (selectedTankModeTwo != i)
-		//	{
-		//		debug.debugMessage("Update tank mode: " + i);
-
-		//		meshModeTwoCost = cost;
-		//		meshModeTwoMass = mass;
-		//		selectedTankModeTwo = i;
-		//		assignResourcesToPart(calledByPlayer);
-		//	}
-		//}
-
-		//public void selectTankSetup(int i, bool calledByPlayer, float cost, float mass)
-		//{
-		//	initializeData();
-
-		//	if (selectedTankModeOne != i)
-		//	{
-		//		debug.debugMessage("Update tank setup: " + i);
-
-		//		meshModeOneCost = cost;
-		//		meshModeOneMass = mass;
-		//		selectedTankModeOne = i;
-		//		assignResourcesToPart(calledByPlayer);
-		//	}
-		//}
-
 		private void assignResourcesToPart(bool calledByPlayer)
 		{
 			// destroying a resource messes up the gui in editor, but not in flight.
@@ -362,12 +328,16 @@ namespace UniversalStorage
 
 			for (int i = 0; i < tankList.Count; i++)
 			{
-				debug.debugMessage(string.Format("Tank Mode: {0} - Selection: {1}", i, selectedTankModeTwo));
-				if (selectedTankModeTwo == i)
+                if (DebugMode)
+    				debug.debugMessage(string.Format("Tank Mode: {0} - Selection: {1}", i, selectedTankModeTwo));
+
+                if (selectedTankModeTwo == i)
 				{
 					for (int j = 0; j < tankList[i].Count; j++)
 					{
-						debug.debugMessage(string.Format("Tank: {0} - Selection: {1}", j, selectedTankModeOne));
+                        if (DebugMode)
+                            debug.debugMessage(string.Format("Tank: {0} - Selection: {1}", j, selectedTankModeOne));
+
 						if (selectedTankModeOne == j)
 						{
 							for (int k = 0; k < tankList[i][j].Count; k++)
@@ -384,8 +354,10 @@ namespace UniversalStorage
 									else
 										newResourceNode.AddValue("amount", res.amount);
 
-									debug.debugMessage(string.Format("Switch to new resource: {0} - Amount: {1:N2} - Max: {2:N2}", res.name, res.amount, res.maxAmount));
-									currentPart.AddResource(newResourceNode);
+                                    if (DebugMode)
+                                        debug.debugMessage(string.Format("Switch to new resource: {0} - Amount: {1:N2} - Max: {2:N2}", res.name, res.amount, res.maxAmount));
+
+                                    currentPart.AddResource(newResourceNode);
 								}
 							}
 						}
