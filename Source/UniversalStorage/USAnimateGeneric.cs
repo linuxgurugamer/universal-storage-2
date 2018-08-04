@@ -1499,32 +1499,32 @@ namespace UniversalStorage
 
         private void DrawCollisionLines(Transform[] sources, float length, Color c)
         {
-            if (sources == null)
-                return;
+            //if (sources == null)
+            //    return;
 
-            if (DebugMode)
-                debug.debugMessage("drawing door collisions test lines");
+            //if (DebugMode)
+            //    debug.debugMessage("drawing door collisions test lines");
 
-            for (int i = sources.Length - 1; i >= 0; i--)
-            {
-                GameObject line = new GameObject("Debug Line");
-                line.transform.position = sources[i].position;
-                LineRenderer lr = line.AddComponent<LineRenderer>();
-                lr.material = new Material(_DebugLineShader);
-                lr.startColor = c;
-                lr.endColor = c * 0.3f;
-                lr.startWidth = 0.03f;
-                lr.endWidth = 0.01f;
+            //for (int i = sources.Length - 1; i >= 0; i--)
+            //{
+            //    GameObject line = new GameObject("Debug Line");
+            //    line.transform.position = sources[i].position;
+            //    LineRenderer lr = line.AddComponent<LineRenderer>();
+            //    lr.material = new Material(_DebugLineShader);
+            //    lr.startColor = c;
+            //    lr.endColor = c * 0.3f;
+            //    lr.startWidth = 0.03f;
+            //    lr.endWidth = 0.01f;
 
-                Vector3 end = sources[i].position + (sources[i].forward * length);
+            //    Vector3 end = sources[i].position + (sources[i].forward * length);
 
-                //debug.debugMessage(string.Format("Debug Line: {0} Start: {1:N3} - End: {2:N3}"
-                //    , sources[i].name, sources[i].position, end));
+            //    //debug.debugMessage(string.Format("Debug Line: {0} Start: {1:N3} - End: {2:N3}"
+            //    //    , sources[i].name, sources[i].position, end));
 
-                lr.SetPosition(0, sources[i].position);
-                lr.SetPosition(1, end);
-                Destroy(line, 2f);
-            }
+            //    lr.SetPosition(0, sources[i].position);
+            //    lr.SetPosition(1, end);
+            //    Destroy(line, 2f);
+            //}
         }
 
 		private void animate(Animation anim, string animationName, float speed, float time)
