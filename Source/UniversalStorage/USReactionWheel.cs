@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
 using UnityEngine;
 
 namespace UniversalStorage
@@ -23,16 +22,11 @@ namespace UniversalStorage
 
         private float _targetSpeed;
         private float _currentSpeed;
-
-        private USdebugMessages debug;
-        private int timer;
-
+        
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-
-            //debug = new USdebugMessages(DebugMode, "US Reaction");
-
+            
             Fields["MaxRotation"].guiActive = DebugMode;
             Fields["MaxRotation"].guiActiveEditor= DebugMode;
             Fields["WheelSpeed"].guiActive = DebugMode;
@@ -69,19 +63,6 @@ namespace UniversalStorage
 
                 if (_wheelTransforms[i].gameObject.activeInHierarchy)
                     _wheelTransforms[i].Rotate(Vector3.up, _currentSpeed);
-            }
-
-            if (timer >= 30)
-            {
-                timer = 0;
-                //debug.debugMessage(string.Format("Reaction Wheel Update\nInput: {0:N3}\nTarget Speed: {1:N3}\nCurrent Speed: {2:N3}"
-                //    , _reactionWheel.inputSum
-                //    ,_targetSpeed
-                //    ,_currentSpeed));
-            }
-            else
-            {
-                timer++;
             }
         }
     }
