@@ -1,0 +1,200 @@
+
+	-------------- Control module -----------------------
+	
+	//SwitchControl is the master part module for any type of switching. It determines how the part menu UI looks and triggers all of the other switch modules
+	
+	MODULE
+	{
+		name = USSwitchControl
+		SwitchID = 0					//Integer value; only one number can be used here and it identifies this control module so that the listener switch modules can update as needed
+		ButtonName = Height				//Part menu "next" button name 
+		ObjectNames = Single height;Double height;Triple height;Quad height 		//The display names to be used for the part menu UI and the "GetInfo" tooltip UI
+		FuelSwitchModeOne = True		//The default fuel switch mode; here used to switch fuel tank size when switching mesh size; only one of these can be set to true
+				
+		//These fields are shown using their default values and aren't generally needed in the actual part config unless you want to change them from their default behavior
+		FuelSwitchModeTwo = False		//Alternate fuel switch mode; used for this part to change between LF/LOX and no fuel tank in the other USSwitchControl module
+		PreviousButtonName = Height		//Part menu "previous" button name; only used if ShowPreviousButton is set to True
+		ShowPreviousButton = False		//Determines if the "previous" button will be shown, or only the "next" button
+		ShowInfo = True					//Determines if the part tooltip will show information about the different variants controlled by this module; the info shown is determined by the ObjectNames field
+		UpdateSymmetry = True			//Update any symmetrically related parts		
+	}
+	
+	//A note about the SwitchID fields:
+	//For the USSwitchControl modules this can only be set to a single integer value.
+	//For the other modules it can be set to multiple values (ie 0 or 0;1) to listen to different SwitchControl modules. In practice on the USFuelSwitch module can really be used with multiple values.
+	
+	-------------- Listener switch modules ---------------------
+	
+	//MeshSwitch is the listener module that actually changes between different mesh variants
+	MODULE
+	{
+		name = USMeshSwitch
+		SwitchID = 0					//Determines which SwitchControl module will trigger this listener
+		MeshTransforms = Octo1;Octo2;Octo3;Octo4	//The transform names of the different mesh variants
+		AffectColliders = True			//Determines if the colliders also change along with the mesh
+		DebugMode = False				//When set to true many debug messages will be logged when switching mesh variants; this line is present in many modules and is set to false by default; it should only be used during development, as there is quite a lot of debug logging that occurs
+	}
+	
+	//NodeSwtich changes between different attach node configurations
+	MODULE
+	{
+		name = USNodeSwitch
+		SwitchID = 0
+		AttachNodes = HeightOne;HeightTwo;HeightThree;HeightFour	//The name of associated ModuleStructuralNode modules; these define a group of attach nodes, the names here must match the "rootObject" field of a ModuleStructuralNode in the same part config
+		DebugMode = False
+	}
+	
+	//DragSwitch changes between different drag cubes, it is also used when animating between different drag cube states
+	MODULE
+	{
+		name = USDragSwitch
+		SwitchID = 0
+		DragCubes = A0;A1;A2;A3		//The name of associated drag cubes from the DRAG_CUBE node in the part config file; when used for a part that animates between different drag cube states, a US shroud for instance, each set of variants can have more than one drag cube reference - DragCubes = A0,B0;A1,B1... 
+		DebugMode = False
+	}
+	
+	//CostSwitch updates the purchase price of a part for each variant
+	MODULE
+	{
+		name = USCostSwitch
+		SwitchID = 0
+		DisplayCurrentModeCost = False	//Whether to show the final cost of the part in its part menu UI
+		AddedCost = 0;500;1000;1500		//The additional cost for each variant; the first variant should generally be 0, as its cost is determined by the regular cost field in the part config
+	}
+	
+	//MassSwitch updates the mass of a part for each variant
+	MODULE
+	{
+		name = USMassSwitch
+		SwitchID = 0
+		DisplayCurrentModeMass = False	//Same as for USCostSwitch
+		AddedMass = 0;0.5;1;1.5			//The additional mass for each variant; again, the mass of the first variant is taken from the regular mass field
+	}	
+	
+	//FuelSwitch controls the fuel tank setup for different variants of a part; it has a more complicated setup since it can be affected by two different USSwitchControl modules; this setup reflects that used for the octocore part, where it can switch between different height variants and different fuel tank setups
+	MODULE
+	{
+		name = USFuelSwitch
+		
+		//Here the switchID listens for changes from two different USSwitchControl modules, one controls fuel tank size, the other controls the presence or absence of fuel tanks (and could be used to change between multiple fuel tank type - ie LF/LOX, LF only, Mono, etc...)
+		SwitchID = 0;1				
+		
+		//This line defines the resources used for each variant. There are three levels of separation between values.
+		//Values separated by a comma mean that all of those resources will be present in a given variant
+		//Values separated by a semicolon are controlled by one USSwitchControl module
+		//Values separated by a line (|) are controlled by a separate USSwitchControl
+		//So for this setup there are two groups of fuel tank setups, one uses four different variants of LF/LOX tanks, and the other is four variants of a Structual tank (no resources)
+		resourceNames = LiquidFuel,Oxidizer;LiquidFuel,Oxidizer;LiquidFuel,Oxidizer;LiquidFuel,Oxidizer|Structural;Structural;Structural;Structural
+		
+		//The max resource amounts are defined in the same way as the resource names. The values correspond to the matching resource defined in the line above
+		resourceAmounts = 27,33;54,66;81,99;108,132|0;0;0;0
+		
+		//This line represents the amount of each resource added to each variant by default, ie when you switch to a different variant it will have that amount in the fuel tank
+		initialResourceAmounts = 27,33;54,66;81,99;108,132|0;0;0;0
+		
+		//This represents the total additional cost for each variant; it includes both the dry tank cost and the cost of the resources; this is how stock resource containers define their cost, so that logic is followed here. This means that a very low tankCost value could result in the dry cost being lower than the version that doesn't use any resource containers. This amount is added in addition to any USCostSwitch modules.
+		tankCost = 100;200;300;400|0;0;0;0
+		
+		//This represents the additional dry tank mass for each variant; it does not include the mass of resources; this, again, is how stock configs work. This amount is added in addition to any values for a USMassSwitch modules.
+		tankMass = 0.25;0.5;0.75;1|0;0;0;0
+		
+		availableInFlight = False	//Determines if this module has any controls shown during flight in the part menu UI
+		availableInEditor = False	//Determines if this module has any controls shown in the editor in the part menu UI; for these parts this is always false since the USSwitchControl module controls any changes
+		
+		displayCurrentTankCost = True		//Determines if the total dry tank cost of the part is shown in the editor part menu UI; this is only used in career mode games
+		displayCurrentTankDryMass = True	//Determines if the total dry tank mass of the part is shown in the editor part menu UI
+	}
+	
+	-------------------- Other modules ------------------------
+	
+	//USAnimateGeneric is the primary animation controller used for the shroud parts; it can be used in conjunction with a stock ModuleCargoBay to occlude parts withing the shroud from the air stream
+	MODULE
+	{
+		name = USAnimateGeneric
+		primaryAnimationName = Take 001			//Animation name for the primary animation
+		secondaryAnimationName = Take 002		//Animation name for the secondary animation, if used
+		
+		//These fields are used to set the names for the in game UI for each function
+		primaryStartEventGUIName = Deploy Primary Bays		
+		primaryEndEventGUIName = Retract Primary Bays		
+		primaryToggleActionName = Toggle Primary Bays		
+		secondaryStartEventGUIName = Deploy Secondary Bays		
+		secondaryEndEventGUIName = Retract Secondary Bays		
+		secondaryToggleActionName = Toggle Secondary Bays		
+		combinedStartEventGUIName = Deploy All Bays		
+		combinedEndEventGUIName = Retract All Bays		
+		combinedToggleActionName = Toggle All Bays
+		
+		primaryAvailableInEVA = true			//Determines if the primary animation can be activated by an EVA Kerbal
+		primaryAvailableInVessel = true			//Determines if the primary animation can be activated in flight from the part menu UI
+		primaryAvailableInEditor = true			//Determines if the primary animation can be activated in the editor from the part menu UI
+		primaryActionAvailable = true			//Determines if the primary animation action group is available
+		secondaryAvailableInEVA = true			//Determines if the secondary animation can be activated by an EVA Kerbal
+		secondaryAvailableInVessel = true       //Determines if the secondary animation can be activated in flight from the part menu UI
+		secondaryAvailableInEditor = true       //Determines if the secondary animation can be activated in the editor from the part menu UI
+		secondaryActionAvailable = true         //Determines if the secondary animation action group is available
+		combinedAvailableInEVA = true			//If both animations are used these lines can be used to show a combined animation button that will trigger both at the same time; this is for an EVA Kerbal
+		combinedAvailableInVessel = true		//Same as above for in flight from the part menu UI
+		combinedAvailableInEditor = true		//Same as above for in editor from the part menu UI
+		combinedActionAvailable = true			//Same as above for the action group
+		jettisonAvailable = true				//Used in conjunction with USJettisonSwitch and the stock ModuleJettison to jettison the bay doors
+		jettisonDeployedOnly = true				//Jettison the doors only when they are opened
+		jettisonStowedOnly = false 				//Jettison the doors only when they are closed
+		jettisonIndices = 5;6;7;8				//The module order index for any associated USJettisonSwitch modules
+		dragModuleIndex	= 1						//The module order index for an associated USDrawSwitch module; used to update the drag cubes when the doors are opened or closed
+		EVArange = 5							//Range from which EVA Kerbals can activate animations
+		oneShot = False							//Whether the animation can only be played once; ie the doors will be stuck open after activating
+		DebugMode = False
+	}
+
+	//This module is used for the reaction wheels that have a physical spinning torque arm; it is used in conjunction with the stock ModuleReactionWheel
+	MODULE
+	{
+		name = USReactionWheel
+		MaxRotation = 0.9			//Sets the mass reaction wheel torque that the spinning torque arm will respond to (ie the amount of torque it takes to max out the spin rate of the arm); it should be a 0-1 value
+        WheelSpeed = 25				//Modifies the max torque arm spin rate
+        WheelAcceleration = 3		//Modifies how quickly the torque arm spins up or slows down
+        WheelTransformName = Arm	//The transform name of the torque arm model
+		DebugMode = False			//If true allows the above values to be modified in game
+	}
+	
+	//This module is used for decouplers that use an animation to show the decoupler action; it is used in conjunction with the stock ModuleDecouple
+	MODULE
+	{
+		name = USDecouple
+		DecoupleAnimationName = Take 001		//The decouple animation name
+		DecoupleTime = 0.08						//The time in the animation when the actual decoupling takes place; this is a 0-1 value
+        DecoupleEVA = true						//Whether the part can be decoupled by an EVA Kerbal
+        DecoupleEventName = Decouple			//The part menu UI decouple button name
+        DecoupleActionName = Decouple			//The action group decouple name
+        AnimationSpeed = 1						//The animation playback speed; usually should be left at 1; this will not effect the DecoupleTime value, as that represents a percentage of the total animation time
+		Staged = True							//Whether the decouple event is activated through staging by default; only applies when the StageOption line is set to true
+		StageOption = True						//Whether the part is able to be activated through staging
+		DebugMode = False						//If true allows DecoupleTime value to be modified in game
+	}
+	
+	//When used with USDecouple this module should always have the staged field set to False
+	MODULE
+	{
+		name = ModuleDecouple
+		ejectionForce = 200
+		explosiveNodeID = InnerNode
+		staged = False
+	}
+	
+	//JettisonSwitch updates which part mesh transforms will be used by any jettison events, ie blowing off the doors of an open shroud. One module is needed for each door that needs to be jettisoned
+	MODULE
+	{
+		name = USJettisonSwitch
+		SwitchID = 0;1					//Can be used to listen for updates from multiple USSwitchControl modules, ie one to control the appearance variant, and one to control the inner structure of the part
+		JettisonTransforms = ..			//The list of all transforms for all variants; this would include the variants for only one door
+		JettisonModuleIndex = 2			//The module order index for an associated stock ModuleJettison module
+		DebugMode = False
+	}
+	
+	//A note about module order index. Some modules need to refer to other module defined in the same part, they identify these modules by their order in the list of all modules for that part.
+	//So, for instance, the stock ModuleCargoBay uses the DeployModuleIndex to identify the animation module (USAnimateGeneric here) responsible for opening and closing the cargo bay. So if the USAnimateGeneric module is placed as the first module in the list (the first MODULE node defined in the part config), then the DeployModuleIndex is set to 0.
+	//The other modules that need to have a module order index specified are the USJettisonSwitch, which specifies the index of the stock ModuleJettison
+	//And USAnimateGeneric which specifies the index of USJettisonSwitch for parts that need to be able to jettison their doors, and the index of USDragSwitch for parts that need to update their drag cubes based on the animation state.
+	
+	
