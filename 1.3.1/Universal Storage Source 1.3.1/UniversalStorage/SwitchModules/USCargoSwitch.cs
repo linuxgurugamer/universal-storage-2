@@ -3,10 +3,8 @@ using UnityEngine;
 
 namespace UniversalStorage
 {
-    public class USCargoSwitch : PartModule
+    public class USCargoSwitch : USBaseSwitch
     {
-        [KSPField]
-        public string SwitchID = string.Empty;
         [KSPField]
         public string CargoBayCenter = string.Empty;
         [KSPField]
@@ -17,46 +15,26 @@ namespace UniversalStorage
         public bool DebugMode = false;
 
         private ModuleCargoBay cargoModule;
-
-        private int[] _SwitchIndices;
-
+        
         private Vector3[] _CargoCenter;
         private float[] _CargoRadii;
-
-        private EventData<int, int, Part> onUSSwitch;
-
+        
         private bool debugDraw;
         private float debugDrawTimer = 0;
         
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-
-            if (String.IsNullOrEmpty(SwitchID)|| String.IsNullOrEmpty(CargoBayCenter) || String.IsNullOrEmpty(CargoBayRadius))
-                return;
-
-            _SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
-
+            
             _CargoCenter = USTools.parseVectors(CargoBayCenter).ToArray();
 
             _CargoRadii = USTools.parseSingles(CargoBayRadius).ToArray();
 
             cargoModule = part.FindModuleImplementing<ModuleCargoBay>();
-
-            onUSSwitch = GameEvents.FindEvent<EventData<int, int, Part>>("onUSSwitch");
-
-            if (onUSSwitch != null)
-                onUSSwitch.Add(onSwitch);
-
+            
             UpdateCargoModule();
         }
-
-        private void OnDestroy()
-        {
-            if (onUSSwitch != null)
-                onUSSwitch.Remove(onSwitch);
-        }
-
+        
         private void OnGUI()
         {
             if (!debugDraw)
@@ -87,7 +65,7 @@ namespace UniversalStorage
             }
         }
 
-        private void onSwitch(int index, int selection, Part p)
+        protected override void onSwitch(int index, int selection, Part p)
         {
             if (p != part)
                 return;

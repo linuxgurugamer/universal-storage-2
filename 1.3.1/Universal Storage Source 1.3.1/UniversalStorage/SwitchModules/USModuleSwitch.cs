@@ -3,10 +3,8 @@ using System.Collections.Generic;
 
 namespace UniversalStorage
 {
-    public class USModuleSwitch : PartModule
+    public class USModuleSwitch : USBaseSwitch
     {
-        [KSPField]
-        public string SwitchID = string.Empty;
         [KSPField]
         public string TargetModule = string.Empty;
         [KSPField]
@@ -17,27 +15,18 @@ namespace UniversalStorage
         public int CurrentSelection = 0;
         [KSPField]
         public bool DebugMode = false;
-
-        private int[] _SwitchIndices;
+        
         private string[] _Fields;
         private List<List<string>> _Values;
         private PartModule _TargetModule;
-        private EventData<int, int, Part> onUSSwitch;
         private USdebugMessages debug;
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-
-            if (String.IsNullOrEmpty(SwitchID))
-                return;
-
+            
             debug = new USdebugMessages(DebugMode, "USModuleSwitch");
-
-            onUSSwitch = GameEvents.FindEvent<EventData<int, int, Part>>("onUSSwitch");
-
-            _SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
-
+            
             if (!string.IsNullOrEmpty(TargetModule))
                 _TargetModule = part.Modules[TargetModule];
 
@@ -54,23 +43,14 @@ namespace UniversalStorage
 
             if (_TargetModule == null)
                 return;
-
-            if (onUSSwitch != null)
-                onUSSwitch.Add(onSwitch);
-
+            
             if (DebugMode)
                 debug.debugMessage("US Module Switch Initialized");
 
             UpdateModule();            
         }
 
-        private void OnDestroy()
-        {
-            if (onUSSwitch != null)
-                onUSSwitch.Remove(onSwitch);
-        }
-
-        private void onSwitch(int index, int selection, Part p)
+        protected override void onSwitch(int index, int selection, Part p)
         {
             if (p != part)
                 return;

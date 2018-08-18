@@ -5,10 +5,8 @@ using UnityEngine;
 
 namespace UniversalStorage
 {
-    public class USMeshSwitch : PartModule
+    public class USMeshSwitch : USBaseSwitch
     {
-        [KSPField]
-        public string SwitchID = string.Empty;
         [KSPField]
         public string MeshTransforms = string.Empty;
         [KSPField]
@@ -19,24 +17,17 @@ namespace UniversalStorage
         public bool DebugMode = false;
         [KSPField]
         public bool DeleteUnused = true;
-
-        private int[] _SwitchIndices;
+        
         private List<List<Transform>> _Transforms;
-        private EventData<int, int, Part> onUSSwitch;
 
         private USdebugMessages debug;
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-
-            if (String.IsNullOrEmpty(SwitchID))
-                return;
-
+            
             debug = new USdebugMessages(DebugMode, "USMeshSwitch");
-
-            _SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
-
+            
             if (String.IsNullOrEmpty(MeshTransforms))
                 return;
 
@@ -55,12 +46,7 @@ namespace UniversalStorage
                     }
                 }
             }
-
-            onUSSwitch = GameEvents.FindEvent<EventData<int, int, Part>>("onUSSwitch");
-
-            if (onUSSwitch != null)
-                onUSSwitch.Add(onSwitch);
-
+            
             UpdateMesh();
 
             if (!HighLogic.LoadedSceneIsFlight || !DeleteUnused)
@@ -86,13 +72,7 @@ namespace UniversalStorage
             }
         }
 
-        private void OnDestroy()
-        {
-            if (onUSSwitch != null)
-                onUSSwitch.Remove(onSwitch);
-        }
-
-        private void onSwitch(int index, int selection, Part p)
+        protected override void onSwitch(int index, int selection, Part p)
         {
             if (p != part)
                 return;

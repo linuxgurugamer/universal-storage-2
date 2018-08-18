@@ -4,10 +4,8 @@ using UnityEngine;
 
 namespace UniversalStorage
 {
-    public class USJettisonSwitch : PartModule
+    public class USJettisonSwitch : USBaseSwitch
     {
-        [KSPField]
-        public string SwitchID = string.Empty;
         [KSPField]
         public string JettisonTransforms = string.Empty;
         [KSPField]
@@ -18,10 +16,8 @@ namespace UniversalStorage
         public bool Jettisoned;
         [KSPField]
         public bool DebugMode = false;
-
-        private int[] _SwitchIndices;
+        
         private Transform[] _JettisonTransforms;
-        private EventData<int, int, Part> onUSSwitch;
 
         private Transform _jettisonTransform;
         private ModuleJettison _jettisonModule;
@@ -37,12 +33,7 @@ namespace UniversalStorage
 
             if (part.Modules.Count <= JettisonModuleIndex)
                 return;
-
-            if (String.IsNullOrEmpty(SwitchID))
-                return;
-
-            _SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
-
+            
             if (String.IsNullOrEmpty(JettisonTransforms))
                 return;
 
@@ -53,11 +44,6 @@ namespace UniversalStorage
             if (part.Modules[JettisonModuleIndex] is ModuleJettison)
                 _jettisonModule = part.Modules[JettisonModuleIndex] as ModuleJettison;
             
-            onUSSwitch = GameEvents.FindEvent<EventData<int, int, Part>>("onUSSwitch");
-
-            if (onUSSwitch != null)
-                onUSSwitch.Add(onSwitch);
-            
             Events["OnJettison"].active = ShowJettisonUI && !Jettisoned;
 
             if (Jettisoned)
@@ -66,13 +52,7 @@ namespace UniversalStorage
                 StartCoroutine(SetJettisonTransform());
         }
 
-        private void OnDestroy()
-        {
-            if (onUSSwitch != null)
-                onUSSwitch.Remove(onSwitch);
-        }
-
-        private void onSwitch(int index, int selection, Part p)
+        protected override void onSwitch(int index, int selection, Part p)
         {
             if (p != part)
                 return;

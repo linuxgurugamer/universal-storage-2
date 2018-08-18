@@ -4,10 +4,8 @@ using KSP.Localization;
 
 namespace UniversalStorage
 {
-    public class USMassSwitch : PartModule, IPartMassModifier
+    public class USMassSwitch : USBaseSwitch, IPartMassModifier
     {
-        [KSPField]
-        public string SwitchID = string.Empty;
         [KSPField]
         public string AddedMass = string.Empty;
         [KSPField]
@@ -18,10 +16,8 @@ namespace UniversalStorage
         public float DryMassInfo = 0f;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
-
-        private int[] _SwitchIndices;
+        
         private double[] _Masses;
-        private EventData<int, int, Part> onUSSwitch;
         private EventData<int, Part, USFuelSwitch> onFuelRequestMass;
         private bool _updateMass = true;
 
@@ -30,13 +26,9 @@ namespace UniversalStorage
         public override void OnAwake()
         {
             base.OnAwake();
-
-            onUSSwitch = GameEvents.FindEvent<EventData<int, int, Part>>("onUSSwitch");
+            
             onFuelRequestMass = GameEvents.FindEvent<EventData<int, Part, USFuelSwitch>>("onFuelRequestMass");
-
-            if (onUSSwitch != null)
-                onUSSwitch.Add(onSwitch);
-
+            
             if (onFuelRequestMass != null)
                 onFuelRequestMass.Add(onFuelSwitchRequest);
 
@@ -48,12 +40,7 @@ namespace UniversalStorage
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-
-            if (String.IsNullOrEmpty(SwitchID))
-                return;
-
-            _SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
-
+            
             if (String.IsNullOrEmpty(AddedMass))
                 return;
 
@@ -64,14 +51,11 @@ namespace UniversalStorage
 
         private void OnDestroy()
         {
-            if (onUSSwitch != null)
-                onUSSwitch.Remove(onSwitch);
-
             if (onFuelRequestMass != null)
                 onFuelRequestMass.Remove(onFuelSwitchRequest);
         }
 
-        private void onSwitch(int index, int selection, Part p)
+        protected override void onSwitch(int index, int selection, Part p)
         {
             if (p != part)
                 return;

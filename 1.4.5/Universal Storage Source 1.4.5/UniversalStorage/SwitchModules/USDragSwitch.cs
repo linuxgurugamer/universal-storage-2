@@ -5,20 +5,16 @@ using System.Collections;
 
 namespace UniversalStorage
 {
-    public class USDragSwitch : PartModule
+    public class USDragSwitch : USBaseSwitch
     {
-        [KSPField]
-        public string SwitchID = string.Empty;
         [KSPField]
         public string DragCubes = string.Empty;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
         [KSPField]
         public bool DebugMode = false;
-
-        private int[] _SwitchIndices;
+        
         private List<List<string>> _DragCubes;
-        private EventData<int, int, Part> onUSSwitch;
         private bool _Loaded;
 
         private USdebugMessages debug;
@@ -28,34 +24,18 @@ namespace UniversalStorage
             base.OnStart(state);
 
             debug = new USdebugMessages(DebugMode, "USDragSwitch");
-
-            if (String.IsNullOrEmpty(SwitchID))
-                return;
-
-            _SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
-
+            
             if (String.IsNullOrEmpty(DragCubes))
                 return;
 
             _DragCubes = USTools.parseDragCubes(DragCubes, part);
-
-            onUSSwitch = GameEvents.FindEvent<EventData<int, int, Part>>("onUSSwitch");
-
-            if (onUSSwitch != null)
-                onUSSwitch.Add(onSwitch);
-
+            
             UpdateDragCube();
 
             _Loaded = true;
         }
-
-        private void OnDestroy()
-        {
-            if (onUSSwitch != null)
-                onUSSwitch.Remove(onSwitch);
-        }
-
-        private void onSwitch(int index, int selection, Part p)
+        
+        protected override void onSwitch(int index, int selection, Part p)
         {
             if (p != part)
                 return;
