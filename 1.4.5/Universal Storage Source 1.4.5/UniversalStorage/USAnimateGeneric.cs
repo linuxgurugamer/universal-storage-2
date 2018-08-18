@@ -115,6 +115,8 @@ namespace UniversalStorage
         [KSPField]
         public string AnimationControlState = string.Empty;
         [KSPField]
+        public bool ToggleDoorRadiators = false;
+        [KSPField]
         public bool UseDoorObstructions = false;
         [KSPField]
         public string DoorObstructionTrigger = "DoorTrigger";
@@ -175,6 +177,7 @@ namespace UniversalStorage
 
         private USJettisonSwitch[] jettisonModules;
         private USDragSwitch dragModule;
+        private USRadiatorSwitch radiatorModule;
         
         private int[] _SwitchIndices;
 
@@ -398,6 +401,14 @@ namespace UniversalStorage
 
                     SetDragCubes(1 - _primaryAnimTime);
                 }
+
+                if (ToggleDoorRadiators)
+                {
+                    radiatorModule = part.FindModuleImplementing<USRadiatorSwitch>();
+
+                    if (primaryDeployed && radiatorModule != null)
+                        radiatorModule.Enable();
+                }
             }
             else
             {
@@ -590,32 +601,40 @@ namespace UniversalStorage
 
 						if (anim.gameObject.activeInHierarchy)
 						{
-							if (!anim.IsPlaying(primaryAnimationName))
-							{
+                            if (!anim.IsPlaying(primaryAnimationName))
+                            {
                                 if (DebugMode)
                                     debug.debugMessage(string.Format("Forcing Animation Stop: {0} - Time: {1:F2}", primaryAnimationName, anim[primaryAnimationName].normalizedTime));
 
                                 if (oneShot)
-								{
-									primaryAnimationState = ModuleAnimateGeneric.animationStates.FIXED;
-								}
-								else
-								{
-									primaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
-								}
+                                {
+                                    primaryAnimationState = ModuleAnimateGeneric.animationStates.FIXED;
+                                }
+                                else
+                                {
+                                    primaryAnimationState = ModuleAnimateGeneric.animationStates.LOCKED;
+                                }
 
-								if (primaryDeployed)
-									_primaryAnimTime = primaryDeployLimit * 0.01f;
-								else
-									_primaryAnimTime = 0;
-                                
+                                if (primaryDeployed)
+                                    _primaryAnimTime = primaryDeployLimit * 0.01f;
+                                else
+                                    _primaryAnimTime = 0;
+
                                 primaryLimit.guiActiveEditor = allowPrimaryDeployLimit;
                                 primaryLimit.guiActive = primaryDeployLimitInFlight;
 
                                 anim[primaryAnimationName].normalizedTime = _primaryAnimTime;
-								SetDragCubes(1 - _primaryAnimTime);
-								anim.Stop(primaryAnimationName);
-								onStop.Fire(_primaryAnimTime);
+                                SetDragCubes(1 - _primaryAnimTime);
+                                anim.Stop(primaryAnimationName);
+                                onStop.Fire(_primaryAnimTime);
+
+                                if (ToggleDoorRadiators && radiatorModule != null)
+                                {
+                                    if (_primaryAnimTime <= 0)
+                                        radiatorModule.Disable();
+                                    else
+                                        radiatorModule.Enable();
+                                }
 							}
 							else
 							{
@@ -1439,7 +1458,7 @@ namespace UniversalStorage
 
                             if (p != null)
                             {
-                                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_PrimaryBayObstruction", p.partInfo.title, part.partInfo.title), 4f, ScreenMessageStyle.UPPER_CENTER);
+                                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_PrimaryBayObstruction", p.partInfo.title, part.partInfo.title), 10f, ScreenMessageStyle.UPPER_CENTER);
 
                                 if (DebugMode)
                                     debug.debugMessage(string.Format("Primary door obstruction detected; stopping animation: {0}", p.partName));
@@ -1482,7 +1501,7 @@ namespace UniversalStorage
 
                             if (p != null)
                             {
-                                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_SecondaryBayObstruction", p.partInfo.title, part.partInfo.title), 4f, ScreenMessageStyle.UPPER_CENTER);
+                                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_SecondaryBayObstruction", p.partInfo.title, part.partInfo.title), 10f, ScreenMessageStyle.UPPER_CENTER);
 
                                 if (DebugMode)
                                     debug.debugMessage(string.Format("Secondary door obstruction detected; stopping animation: {0}", p.partName));
@@ -1499,32 +1518,32 @@ namespace UniversalStorage
 
         private void DrawCollisionLines(Transform[] sources, float length, Color c)
         {
-            //if (sources == null)
-            //    return;
+            if (sources == null)
+                return;
 
-            //if (DebugMode)
-            //    debug.debugMessage("drawing door collisions test lines");
+            if (DebugMode)
+                debug.debugMessage("drawing door collisions test lines");
 
-            //for (int i = sources.Length - 1; i >= 0; i--)
-            //{
-            //    GameObject line = new GameObject("Debug Line");
-            //    line.transform.position = sources[i].position;
-            //    LineRenderer lr = line.AddComponent<LineRenderer>();
-            //    lr.material = new Material(_DebugLineShader);
-            //    lr.startColor = c;
-            //    lr.endColor = c * 0.3f;
-            //    lr.startWidth = 0.03f;
-            //    lr.endWidth = 0.01f;
+            for (int i = sources.Length - 1; i >= 0; i--)
+            {
+                GameObject line = new GameObject("Debug Line");
+                line.transform.position = sources[i].position;
+                LineRenderer lr = line.AddComponent<LineRenderer>();
+                lr.material = new Material(_DebugLineShader);
+                lr.startColor = c;
+                lr.endColor = c * 0.3f;
+                lr.startWidth = 0.03f;
+                lr.endWidth = 0.01f;
 
-            //    Vector3 end = sources[i].position + (sources[i].forward * length);
+                Vector3 end = sources[i].position + (sources[i].forward * length);
 
-            //    //debug.debugMessage(string.Format("Debug Line: {0} Start: {1:N3} - End: {2:N3}"
-            //    //    , sources[i].name, sources[i].position, end));
+                //debug.debugMessage(string.Format("Debug Line: {0} Start: {1:N3} - End: {2:N3}"
+                //    , sources[i].name, sources[i].position, end));
 
-            //    lr.SetPosition(0, sources[i].position);
-            //    lr.SetPosition(1, end);
-            //    Destroy(line, 2f);
-            //}
+                lr.SetPosition(0, sources[i].position);
+                lr.SetPosition(1, end);
+                Destroy(line, 2f);
+            }
         }
 
 		private void animate(Animation anim, string animationName, float speed, float time)
@@ -1583,9 +1602,15 @@ namespace UniversalStorage
 		{
 			get
 			{
-				//debug.debugMessage(string.Format("Get Scalar called: Primary: {0:N2} - Secondary: {1:N2}", _primaryAnimTime, _secondaryAnimTime));
+                //debug.debugMessage(string.Format("Get Scalar called: Primary: {0:N2} - Secondary: {1:N2}", _primaryAnimTime, _secondaryAnimTime));
 
-				if (_primaryAnimTime >= 1 || _secondaryAnimTime >= 1)
+                if (primaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING)
+                    return _primaryAnimTime;
+
+                if (secondaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING)
+                    return _secondaryAnimTime;
+
+				if (_primaryAnimTime >= primaryDeployLimit || _secondaryAnimTime >= secondaryDeployLimit)
 					return 1;
 
 				if (_primaryAnimTime > 0)

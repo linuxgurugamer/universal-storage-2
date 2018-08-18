@@ -115,6 +115,8 @@ namespace UniversalStorage
         [KSPField]
         public string AnimationControlState = string.Empty;
         [KSPField]
+        public bool ToggleDoorRadiators = false;
+        [KSPField]
         public bool UseDoorObstructions = false;
         [KSPField]
         public string DoorObstructionTrigger = "DoorTrigger";
@@ -175,7 +177,8 @@ namespace UniversalStorage
 
         private USJettisonSwitch[] jettisonModules;
         private USDragSwitch dragModule;
-        
+        private USRadiatorSwitch radiatorModule;
+
         private int[] _SwitchIndices;
 
         private int[] _ControlStates;
@@ -398,6 +401,14 @@ namespace UniversalStorage
 
                     SetDragCubes(1 - _primaryAnimTime);
                 }
+
+                if (ToggleDoorRadiators)
+                {
+                    radiatorModule = part.FindModuleImplementing<USRadiatorSwitch>();
+
+                    if (primaryDeployed && radiatorModule != null)
+                        radiatorModule.Enable();
+                }
             }
             else
             {
@@ -616,7 +627,15 @@ namespace UniversalStorage
 								SetDragCubes(1 - _primaryAnimTime);
 								anim.Stop(primaryAnimationName);
 								onStop.Fire(_primaryAnimTime);
-							}
+
+                                if (ToggleDoorRadiators && radiatorModule != null)
+                                {
+                                    if (_primaryAnimTime <= 0)
+                                        radiatorModule.Disable();
+                                    else
+                                        radiatorModule.Enable();
+                                }
+                            }
 							else
 							{
 								//debug.debugMessage(string.Format("Animation {0} playing - Time: {1:F2}", primaryAnimationName, anim[primaryAnimationName].normalizedTime));
@@ -1439,7 +1458,7 @@ namespace UniversalStorage
 
                             if (p != null)
                             {
-                                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_PrimaryBayObstruction", p.partInfo.title, part.partInfo.title), 4f, ScreenMessageStyle.UPPER_CENTER);
+                                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_PrimaryBayObstruction", p.partInfo.title, part.partInfo.title), 10f, ScreenMessageStyle.UPPER_CENTER);
 
                                 if (DebugMode)
                                     debug.debugMessage(string.Format("Primary door obstruction detected; stopping animation: {0}", p.partName));
@@ -1482,7 +1501,7 @@ namespace UniversalStorage
 
                             if (p != null)
                             {
-                                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_SecondaryBayObstruction", p.partInfo.title, part.partInfo.title), 4f, ScreenMessageStyle.UPPER_CENTER);
+                                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_US_SecondaryBayObstruction", p.partInfo.title, part.partInfo.title), 10f, ScreenMessageStyle.UPPER_CENTER);
 
                                 if (DebugMode)
                                     debug.debugMessage(string.Format("Secondary door obstruction detected; stopping animation: {0}", p.partName));
@@ -1583,19 +1602,25 @@ namespace UniversalStorage
 		{
 			get
 			{
-				//debug.debugMessage(string.Format("Get Scalar called: Primary: {0:N2} - Secondary: {1:N2}", _primaryAnimTime, _secondaryAnimTime));
+                //debug.debugMessage(string.Format("Get Scalar called: Primary: {0:N2} - Secondary: {1:N2}", _primaryAnimTime, _secondaryAnimTime));
 
-				if (_primaryAnimTime >= 1 || _secondaryAnimTime >= 1)
-					return 1;
+                if (primaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING)
+                    return _primaryAnimTime;
 
-				if (_primaryAnimTime > 0)
-					return _primaryAnimTime;
+                if (secondaryAnimationState == ModuleAnimateGeneric.animationStates.MOVING)
+                    return _secondaryAnimTime;
 
-				if (_secondaryAnimTime > 0)
-					return _secondaryAnimTime;
+                if (_primaryAnimTime >= primaryDeployLimit || _secondaryAnimTime >= secondaryDeployLimit)
+                    return 1;
 
-				return 0;
-			}
+                if (_primaryAnimTime > 0)
+                    return _primaryAnimTime;
+
+                if (_secondaryAnimTime > 0)
+                    return _secondaryAnimTime;
+
+                return 0;
+            }
 		}
 
 		public string ScalarModuleID
