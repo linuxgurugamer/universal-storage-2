@@ -1,23 +1,24 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text;
 using KSP.Localization;
+using UniversalStorage.StockVariants;
 
 namespace UniversalStorage
 {
     public class USSwitchControl : PartModule
     {
+        private const string ICON_TAG = "Icon_Hidden";
+        private const string UNTAGGED = "Untagged";
+
         [KSPField]
         public int SwitchID = -1;
         [KSPField]
-        public string ButtonName = "Next part variant";
-        [KSPField]
-        public string PreviousButtonName = "Prev part variant";
-        [KSPField]
         public string ObjectNames = string.Empty;
         [KSPField]
-        public bool ShowPreviousButton = true;
+        public string VariantColors = string.Empty;
         [KSPField]
         public bool ShowInfo = true;
         [KSPField]
@@ -34,35 +35,45 @@ namespace UniversalStorage
         public string CurrentVariantTitle = "Current Variant";
         [KSPField]
         public string ModuleDisplayName = "Switch Control";
-        [KSPField(guiActiveEditor = true, guiName = "Current Variant")]
-        public string CurrentObjectName = string.Empty;
 
+        [KSPField, UI_USVariantSelector(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, scene = UI_Scene.Editor)]
+        private int VariantSelection = 0;
+        
+        private List<USVariantInfo> _variantInfoList = new List<USVariantInfo>();
+        
         private string[] SwitchNames;
         private string[] _localizedSwitchNames;
+        private string[] SwitchColors;
+
         private EventData<int, int, Part> onUSSwitch;
         private EventData<int, int, bool, Part> onUSFuelSwitch;
 
-        private string _localizedNextNameString = "Next part variant";
-        private string _localizedPreviousNameString = "Previous part variant";
+        private EventData<int, int, AvailablePart, Transform> onUSEditorIconSwitch;
+        
         private string _localizedCurrentVariantString = "Current Variant";
+
+        public override void OnLoad(ConfigNode node)
+        {
+            base.OnLoad(node);
+
+            //USdebugMessages.USStaticLog("Load US Switch Control Module");
+            
+            LoadSwitchData();
+
+            if (!HighLogic.LoadedSceneIsFlight && !HighLogic.LoadedSceneIsEditor)
+            {
+                //USdebugMessages.USStaticLog("Find Editor Icon Switch Event");
+                onUSEditorIconSwitch = GameEvents.FindEvent<EventData<int, int, AvailablePart, Transform>>("onUSEditorIconSwitch");
+            }
+        }
 
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-
-            _localizedNextNameString = Localizer.Format(ButtonName);
-            _localizedPreviousNameString = Localizer.Format(PreviousButtonName);
+            
             _localizedCurrentVariantString = Localizer.Format(CurrentVariantTitle);
-
-            Events["nextObjectEvent"].guiName = _localizedNextNameString;
-            Events["previousObjectEvent"].guiName = _localizedPreviousNameString;
-
+            
             Events["RenderDragCube"].active = DebugDragCube;
-
-            Fields["CurrentObjectName"].guiName = _localizedCurrentVariantString;
-
-            if (!ShowPreviousButton)
-                Events["previousObjectEvent"].guiActiveEditor = false;
             
             if (SwitchID < 0)
             {
@@ -78,23 +89,59 @@ namespace UniversalStorage
 
             if (FuelSwitchModeOne || FuelSwitchModeTwo)
                 UpdateSymmetry = true;
-
-            if (!String.IsNullOrEmpty(ObjectNames))
-                SwitchNames = ObjectNames.Split(';');
-
+            
             onUSSwitch = GameEvents.FindEvent<EventData<int, int, Part>>("onUSSwitch");
 
             onUSFuelSwitch = GameEvents.FindEvent<EventData<int, int, bool, Part>>("onUSFuelSwitch");
+            
+            if (state == StartState.Editor)
+            {
+                LoadSwitchData();
+
+                _variantInfoList.Clear();
+
+                for (int i = 0; i < SwitchNames.Length; i++)
+                {
+                    _localizedSwitchNames[i] = Localizer.Format(SwitchNames[i]);
+
+                    string primary = "#3a562a";
+                    string secondary = "#999999";
+
+                    if (SwitchColors != null && i < SwitchColors.Length)
+                    {
+                        string[] colors = SwitchColors[i].Split(',');
+
+                        if (colors.Length == 2)
+                        {
+                            primary = colors[0];
+                            secondary = colors[1];
+                        }
+                    }
+
+                    _variantInfoList.Add(new USVariantInfo(_localizedCurrentVariantString, _localizedSwitchNames[i], primary, secondary));
+                }
+
+                UI_USVariantSelector variantSelector = Fields["VariantSelection"].uiControlEditor as UI_USVariantSelector;
+
+                variantSelector.onFieldChanged = OnSwitch;
+                variantSelector.onSymmetryFieldChanged = OnSymmetrySwitch;
+
+                variantSelector.Variants = _variantInfoList;
+            }
+        }
+        
+        private void LoadSwitchData()
+        {
+            if (!String.IsNullOrEmpty(ObjectNames))
+                SwitchNames = ObjectNames.Split(';');
+
+            if (!String.IsNullOrEmpty(VariantColors))
+                SwitchColors = VariantColors.Split(';');
 
             if (SwitchNames == null || SwitchNames.Length == 0)
                 return;
 
             _localizedSwitchNames = new string[SwitchNames.Length];
-
-            for (int i = SwitchNames.Length - 1; i >= 0; i--)
-            {
-                _localizedSwitchNames[i] = Localizer.Format(SwitchNames[i]);
-            }
 
             if (CurrentSelection >= _localizedSwitchNames.Length)
                 CurrentSelection = _localizedSwitchNames.Length - 1;
@@ -102,7 +149,47 @@ namespace UniversalStorage
             if (CurrentSelection < 0)
                 CurrentSelection = 0;
 
-            CurrentObjectName = _localizedSwitchNames[CurrentSelection];
+            VariantSelection = CurrentSelection;
+        }
+        
+        public override void OnStartFinished(StartState state)
+        {
+            base.OnStartFinished(state);
+
+            if (state == StartState.Editor)
+                StartCoroutine(WaitForStart());
+        }
+
+        private IEnumerator WaitForStart()
+        {
+            yield return new WaitForEndOfFrame();
+
+            Switch();
+        }
+
+        public bool HasSwitches()
+        {
+            return SwitchNames != null && SwitchNames.Length > 0;
+        }
+
+        public override void OnIconCreate()
+        {
+            StripTag<MeshRenderer>(part.gameObject, ICON_TAG);
+            StripTag<MeshFilter>(part.gameObject, ICON_TAG);
+            StripTag<SkinnedMeshRenderer>(part.gameObject, ICON_TAG);
+        }
+
+        private void StripTag<T>(GameObject obj, string tag) where T : Component
+        {
+            var components = obj.GetComponentsInChildren<T>();
+
+            for (int i = components.Length - 1; i >= 0; i--)
+            {
+                if (components[i].gameObject.tag == tag)
+                {
+                    components[i].gameObject.tag = UNTAGGED;
+                }
+            }
         }
 
         public override string GetInfo()
@@ -129,27 +216,39 @@ namespace UniversalStorage
         {
             return Localizer.Format(ModuleDisplayName);
         }
-
-        [KSPEvent(guiActive = false, guiActiveEditor = true, guiActiveUnfocused = false, guiName = "Next part variant")]
-        public void nextObjectEvent()
+        
+        public void EditorToggleVariant(AvailablePart partInfo, Transform partIcon, bool iterate)
         {
-            CurrentSelection++;
+            //USdebugMessages.USStaticLog("Fire editor icon toggle: {0} - Iterate: {1}", partInfo.title, iterate);
+
+            if (iterate)
+                CurrentSelection++;
 
             if (CurrentSelection >= _localizedSwitchNames.Length)
                 CurrentSelection = 0;
 
-            SwitchTo(true);
-        }
-
-        [KSPEvent(guiActive = false, guiActiveEditor = true, guiActiveUnfocused = false, guiName = "Prev part variant")]
-        public void previousObjectEvent()
-        {
-            CurrentSelection--;
-
             if (CurrentSelection < 0)
                 CurrentSelection = _localizedSwitchNames.Length - 1;
 
+            if (onUSEditorIconSwitch != null)
+            {
+                //USdebugMessages.USStaticLog("Fire editor switch");
+                onUSEditorIconSwitch.Fire(SwitchID, CurrentSelection, partInfo, partIcon);
+            }
+        }
+
+        private void OnSwitch(BaseField field, object obj)
+        {
+            CurrentSelection = VariantSelection;
+
             SwitchTo(true);
+        }
+
+        private void OnSymmetrySwitch(BaseField field, object obj)
+        {
+            //CurrentSelection = VariantSelection;
+
+            //SwitchTo(true);
         }
 
         private void SwitchTo(bool player)
@@ -185,9 +284,7 @@ namespace UniversalStorage
                 onUSFuelSwitch.Fire(SwitchID, CurrentSelection, true, part);
             else if (FuelSwitchModeTwo)
                 onUSFuelSwitch.Fire(SwitchID, CurrentSelection, false, part);
-
-            CurrentObjectName = _localizedSwitchNames[CurrentSelection];
-
+            
             GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
