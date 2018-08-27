@@ -16,15 +16,9 @@ namespace UniversalStorage2
         [KSPField]
         public string RadiatorEnergy = string.Empty;
         [KSPField]
-        public float IdlePower = 1f;
-        [KSPField]
         public bool ManualRadiatorToggle = false;
-        [KSPField]
-        public bool AutoEnable = false;
-        [KSPField]
-        public bool AllowActiveCooling = false;
         [KSPField(isPersistant = true)]
-        public bool ActiveCooling = false;
+        public bool ActiveCooling = true;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
 
@@ -34,45 +28,25 @@ namespace UniversalStorage2
         private float[] _RadiatorOvercools;
         private float[] _RadiatorEnergies;
         
-        private string _EnableActiveLocalizedString = "Disable Active Cooling";
-        private string _DisableActiveLocalizedString = "Enable Active Cooling";
-
-        private double _originalResourceRate;
-
         private bool _Enabled;
         private bool _Unavailable = false;
         
         private BaseField _BaseStatusField;
 
         private BaseEvent _ToggleRadiatorEvent;
-        private BaseEvent _ToggleActiveEvent;
 
         private EventData<int, int, Part> onUSSwitch;
 
         public override void Start()
         {
-            _EnableActiveLocalizedString = Localizer.Format("#autoLOC_US_EnableActiveCooling");
-            _DisableActiveLocalizedString = Localizer.Format("#autoLOC_US_DisableActiveCooling");
+
         }
 
         public override void OnStart(StartState state)
         {
-            parentCoolingOnly = !ActiveCooling;
-
-            if (resHandler != null)
-            {
-                if (resHandler.inputResources != null && resHandler.inputResources.Count > 0)
-                {
-                    _originalResourceRate = resHandler.inputResources[0].rate;
-
-                    resHandler.inputResources[0].rate = _originalResourceRate * (parentCoolingOnly ? IdlePower : 1);
-                }
-            }
-
             _BaseStatusField = Fields["status"];
 
             _ToggleRadiatorEvent = Events["ToggleRadiator"];
-            _ToggleActiveEvent = Events["ToggleActiveRadiator"];
 
             if (String.IsNullOrEmpty(RadiatorPower))
             {
@@ -135,46 +109,22 @@ namespace UniversalStorage2
                 return;
 
             _ToggleRadiatorEvent.active = ManualRadiatorToggle;
-            _ToggleActiveEvent.active = AllowActiveCooling;
 
             _BaseStatusField.guiActive = true;
 
             _Enabled = true;
-            IsCooling = true;
-
-            if (AutoEnable)
-            {
-                parentCoolingOnly = false;
-                ActiveCooling = !parentCoolingOnly;
-
-                _ToggleActiveEvent.guiName = _DisableActiveLocalizedString;
-
-                if (resHandler == null)
-                    return;
-
-                if (resHandler.inputResources == null || resHandler.inputResources.Count <= 0)
-                    return;
-
-                resHandler.inputResources[0].rate = _originalResourceRate;
-            }
-            else
-            {
-                if (AllowActiveCooling)
-                    _ToggleActiveEvent.guiName = parentCoolingOnly ? _EnableActiveLocalizedString : _DisableActiveLocalizedString;
-            }
+            IsCooling = ActiveCooling;            
         }
 
         public void Disable()
         {
             _ToggleRadiatorEvent.active = false;
-            _ToggleActiveEvent.active = false;
 
             _BaseStatusField.guiActive = false;
 
             _Enabled = false;
 
             IsCooling = false;
-            parentCoolingOnly = true;
         }
 
         [KSPEvent(guiName = "#autoLOC_6001416", active = false, guiActive = true, guiActiveEditor = true, guiActiveUnfocused = true, unfocusedRange = 4f, externalToEVAOnly = true)]
@@ -183,52 +133,15 @@ namespace UniversalStorage2
             if (!_Enabled || _Unavailable)
             {
                 IsCooling = false;
-                parentCoolingOnly = true;
-                ActiveCooling = !parentCoolingOnly;
+                ActiveCooling = false;
                 return;
             }
 
             IsCooling = !IsCooling;
 
-            ActiveCooling = !parentCoolingOnly;
-
-            _ToggleActiveEvent.active = AllowActiveCooling && IsCooling;
-
-            if (resHandler == null)
-                return;
-
-            if (resHandler.inputResources == null || resHandler.inputResources.Count <= 0)
-                return;
-
-            resHandler.inputResources[0].rate = _originalResourceRate * (parentCoolingOnly ? IdlePower : 1);
+            ActiveCooling = IsCooling;
         }
-
-        [KSPEvent(active = false, guiActive = true, guiActiveEditor = true, guiActiveUnfocused = true, unfocusedRange = 4f, externalToEVAOnly = true)]
-        public void ToggleActiveRadiator()
-        {
-            if (!_Enabled || _Unavailable)
-            {
-                IsCooling = false;
-                parentCoolingOnly = true;
-                ActiveCooling = !parentCoolingOnly;
-                return;
-            }
-
-            parentCoolingOnly = !parentCoolingOnly;
-
-            ActiveCooling = !parentCoolingOnly;
-
-            _ToggleActiveEvent.guiName = parentCoolingOnly ? _EnableActiveLocalizedString : _DisableActiveLocalizedString;
-
-            if (resHandler == null)
-                return;
-
-            if (resHandler.inputResources == null || resHandler.inputResources.Count <= 0)
-                return;
-
-            resHandler.inputResources[0].rate = _originalResourceRate * (parentCoolingOnly ? IdlePower : 1);
-        }
-
+        
         public override bool IsSibling(Part targetPart)
         {
             if (part.parent != null)
@@ -241,10 +154,13 @@ namespace UniversalStorage2
                     return true;
             }
 
-            if (targetPart.parent != null && targetPart.parent == part)
-                return true;
-            else if (targetPart.parent.parent != null && targetPart.parent.parent == part)
-                return true;
+            if (targetPart.parent != null)
+            {
+                if (targetPart.parent == part)
+                    return true;
+                else if (targetPart.parent.parent != null && targetPart.parent.parent == part)
+                    return true;
+            }
 
             return false;
         }
@@ -308,19 +224,6 @@ namespace UniversalStorage2
             if (_RadiatorOvercools != null && _RadiatorOvercools.Length > CurrentSelection)
                 overcoolFactor = _RadiatorOvercools[CurrentSelection];
 
-            if (resHandler != null)
-            {
-                if (resHandler.inputResources != null && resHandler.inputResources.Count > 0)
-                {
-                    if (_RadiatorEnergies != null && _RadiatorEnergies.Length > CurrentSelection)
-                    {
-                        _originalResourceRate = _RadiatorEnergies[CurrentSelection];
-
-                        resHandler.inputResources[0].rate = _originalResourceRate * (parentCoolingOnly ? IdlePower : 1);
-                    }
-                }
-            }
-
             if (_RadiatorAvailables != null && _RadiatorAvailables.Length > CurrentSelection)
             {
                 int i = _RadiatorAvailables[CurrentSelection];
@@ -331,14 +234,23 @@ namespace UniversalStorage2
                 {
                     IsCooling = false;
                     _ToggleRadiatorEvent.active = false;
-                    _ToggleActiveEvent.active = false;
                     _BaseStatusField.guiActive = false;
                 }
                 else
                 {
                     _ToggleRadiatorEvent.active = ManualRadiatorToggle;
-                    _ToggleActiveEvent.active = AllowActiveCooling && IsCooling;
                     _BaseStatusField.guiActive = _Enabled;
+                }
+            }
+
+            if (resHandler != null)
+            {
+                if (resHandler.inputResources != null && resHandler.inputResources.Count > 0)
+                {
+                    if (_RadiatorEnergies != null && _RadiatorEnergies.Length > CurrentSelection)
+                    {
+                        resHandler.inputResources[0].rate = _RadiatorEnergies[CurrentSelection];
+                    }
                 }
             }
 
