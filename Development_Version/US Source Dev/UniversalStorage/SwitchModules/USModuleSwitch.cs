@@ -11,6 +11,8 @@ namespace UniversalStorage2
         public string TargetFields = string.Empty;
         [KSPField]
         public string TargetValues = string.Empty;
+        [KSPField]
+        public bool EarlyApply = false;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
         [KSPField]
@@ -24,9 +26,7 @@ namespace UniversalStorage2
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            
-            debug = new USdebugMessages(DebugMode, "USModuleSwitch");
-            
+
             if (!string.IsNullOrEmpty(TargetModule))
                 _TargetModule = part.Modules[TargetModule];
 
@@ -37,9 +37,33 @@ namespace UniversalStorage2
                 _Values = USTools.parseDoubleStrings(TargetValues);
         }
 
+        public override void OnLoad(ConfigNode node)
+        {
+            base.OnLoad(node);
+            
+            if (!string.IsNullOrEmpty(TargetModule))
+                _TargetModule = part.Modules[TargetModule];
+
+            if (!string.IsNullOrEmpty(TargetFields))
+                _Fields = USTools.parseNames(TargetFields, '|').ToArray();
+
+            if (!string.IsNullOrEmpty(TargetValues))
+                _Values = USTools.parseDoubleStrings(TargetValues);
+
+            debug = new USdebugMessages(DebugMode, "USModuleSwitch");
+
+            if (!EarlyApply)
+                return;
+
+            UpdateModule();
+        }
+
         public override void OnStartFinished(StartState state)
         {
             base.OnStartFinished(state);
+
+            //if (EarlyApply)
+            //    return;
 
             if (_TargetModule == null)
                 return;

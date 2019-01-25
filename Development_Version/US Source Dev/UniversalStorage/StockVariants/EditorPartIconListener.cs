@@ -1,4 +1,5 @@
 ﻿
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using KSP.UI.Screens;
@@ -161,10 +162,43 @@ namespace UniversalStorage2.StockVariants
             if (switches != null && switches.Count > 0)
                 switches[0].EditorToggleVariant(_partInfo, _partIconTransform, false);
 
+            //USdebugMessages.USStaticLog("Original Icon: {7}: Scale: {0:F4} - Rotation: {1:F4} - Position: {2:F4}\nChild: {6}: Scale: {3:F4} - Rotation: {4:F4} - Position: {5:F4}"
+            //    , _partIconTransform.localScale, _partIconTransform.localRotation, _partIconTransform.localPosition
+            //    , _partIconTransform.GetChild(0).localScale, _partIconTransform.GetChild(0).localRotation, _partIconTransform.GetChild(0).localPosition
+            //    , _partIconTransform.GetChild(0).name, _partIconTransform.name);
+
+            UpdateIconScale();
+
             if (onPrimaryVariantSwitched != null)
                 onPrimaryVariantSwitched.Add(OnPrimaryVariantSwitch);
         }
 
+        private void UpdateIconScale()
+        {
+            if (_partIconTransform == null)
+                return;
+
+            if (_partIconTransform.childCount < 1)
+                return;
+            
+            Transform scaler = _partIconTransform.GetChild(0);
+
+            Bounds bounder = USTools.GetActivePartBounds(scaler.gameObject);
+
+            float scale = USTools.GetBoundsScale(bounder);
+
+            //USdebugMessages.USStaticLog("New bounds scale: {0}\nIcon Scale: {1}\nBounds Center: {2}\nBounds X: {3} Y: {4} Z: {5}"
+            //    , scale.ToString("F4"), _partInfo.iconScale.ToString("F4"), bounder.center.ToString("F3")
+            //    , bounder.size.x.ToString("F3"), bounder.size.y.ToString("F3"), bounder.size.y.ToString("F3"));
+
+            scaler.localScale = Vector3.one * scale;
+            scaler.localPosition = new Vector3(scaler.localPosition.x, (bounder.center * scale * -1f).y, scaler.localPosition.z);
+
+            //USdebugMessages.USStaticLog("New Icon: {7}: Scale: {0:F4} - Rotation: {1:F4} - Position: {2:F4}\nChild: {6}: Scale: {3:F4} - Rotation: {4:F4} - Position: {5:F4}"
+            //    , _partIconTransform.localScale, _partIconTransform.localRotation, _partIconTransform.localPosition
+            //    , scaler.localScale, scaler.localRotation, scaler.localPosition, scaler.name, _partIconTransform.name);
+        }
+        
         private void TogglePrimaryVariant(AvailablePart partInfo)
         {
             USSwitchControl switchControl = USVariantController.Instance.GetSwitchControl(partInfo, true);
@@ -188,6 +222,8 @@ namespace UniversalStorage2.StockVariants
                 onPrimaryVariantSwitched.Fire(partInfo);
 
             _activeSwitcher = false;
+
+            UpdateIconScale();
 
             //USdebugMessages.USStaticLog("Select variant from Editor Icon: {0} - Name: {1}", partInfo.title, partIcon.name);
         }
@@ -216,6 +252,8 @@ namespace UniversalStorage2.StockVariants
 
             _activeSwitcher = false;
 
+            UpdateIconScale();
+
             //USdebugMessages.USStaticLog("Select variant from secondary Editor Icon: {0} - Name: {1}", partInfo.title, partIcon.name);
         }
 
@@ -238,6 +276,8 @@ namespace UniversalStorage2.StockVariants
             //USdebugMessages.USStaticLog("Fire primary variant event for icon: {0}", partInfo.title);
 
             switchControl.EditorToggleVariant(partInfo, _partIconTransform, false);
+
+            UpdateIconScale();
         }
 
         private void OnSecondaryVariantSwitch(AvailablePart partInfo)
@@ -259,6 +299,8 @@ namespace UniversalStorage2.StockVariants
             //USdebugMessages.USStaticLog("Fire secondary variant event for icon: {0}", partInfo.title);
 
             switchControl.EditorToggleVariant(partInfo, _partIconTransform, false);
+
+            UpdateIconScale();
         }
     }
 }

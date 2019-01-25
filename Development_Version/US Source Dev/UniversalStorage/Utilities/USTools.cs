@@ -314,6 +314,72 @@ namespace UniversalStorage2
             return attachNodes;
         }
 
+        public static Bounds GetActivePartBounds(GameObject part)
+        {
+            Bounds boundy = default(Bounds);
+
+            Vector3 pos = part.transform.position;
+            Quaternion quat = part.transform.rotation;
+
+            part.transform.position = Vector3.zero;
+            part.transform.rotation = Quaternion.identity;
+
+            var renderers = part.GetComponentsInChildren<Renderer>();
+
+            bool bounded = false;
+
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                //Bounds b = renderers[i].bounds;
+                //USdebugMessages.USStaticLog("Object: {0} - Active: {1}\nCenter: {2:F3} Size: {3:F3}\nMin: {4:F3} Max: {5:F3}"
+                //    , renderers[i].name, renderers[i].gameObject.activeInHierarchy,
+                //    b.center, b.size, b.min, b.max);
+
+                if (!renderers[i].gameObject.activeInHierarchy)
+                    continue;
+
+                if (renderers[i] is MeshRenderer)
+                {
+                    MeshFilter mesh = renderers[i].gameObject.GetComponent<MeshFilter>();
+
+                    Bounds b = mesh.sharedMesh.bounds;
+
+                    //USdebugMessages.USStaticLog("Object: {0} - Active: {1}\nCenter: {2:F3} Size: {3:F3}\nMin: {4:F3} Max: {5:F3}"
+                    //, renderers[i].name, renderers[i].gameObject.activeInHierarchy,
+                    //b.center, b.size, b.min, b.max);
+
+                    if (!bounded)
+                    {
+                        boundy = new Bounds(b.center, b.size);
+                        bounded = true;
+                    }
+                    else
+                    {
+                        boundy.Encapsulate(b);
+                        //boundy.Encapsulate(renderers[i].bounds.max);
+                    }
+                }
+            }
+
+            part.transform.position = pos;
+            part.transform.rotation = quat;
+
+            return boundy;
+        }
+
+        public static float GetBoundsScale(Bounds bounder)
+        {
+            float f = 1;
+
+            f = Mathf.Max(Mathf.Abs(bounder.size.y), Mathf.Abs(bounder.size.z));
+
+            f = Mathf.Max(Mathf.Abs(bounder.size.x), f);
+
+            f = 1 / f;
+
+            return f;
+        }
+
         private static void GLStart()
         {
             if (glDepth == 0)
