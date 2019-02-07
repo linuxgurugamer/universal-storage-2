@@ -184,6 +184,38 @@ namespace UniversalStorage2
                 ToggleEvent();
         }
 
+        new public void DeployExperiment()
+        {
+            if (!IsDeployed)
+            {
+                Animate(1 * animSpeed, 0, WrapMode.Default, deployAnimationName, _deployAnim);
+                IsDeployed = true;
+
+                _baseDeployExperiment.active = true;
+                _baseDeployExperimentExternal.active = true;
+
+                _tglEvent.guiName = _localizedRetractString;
+            }
+
+            base.DeployExperiment();
+        }
+
+        new public void DeployExperimentExternal()
+        {
+            if (!IsDeployed)
+            {
+                Animate(1 * animSpeed, 0, WrapMode.Default, deployAnimationName, _deployAnim);
+                IsDeployed = true;
+
+                _baseDeployExperiment.active = true;
+                _baseDeployExperimentExternal.active = true;
+
+                _tglEvent.guiName = _localizedRetractString;
+            }
+
+            base.DeployExperimentExternal();
+        }
+
         new public void DeployAction(KSPActionParam param)
         {
             if (!IsDeployed)
