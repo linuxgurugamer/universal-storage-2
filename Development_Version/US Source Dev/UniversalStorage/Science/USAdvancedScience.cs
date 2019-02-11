@@ -39,7 +39,13 @@ namespace UniversalStorage2
         public string greebleTransform = string.Empty;
         [KSPField]
         public string greebleToggleName = "Toggle Greebles";
-        
+
+
+        [KSPField]
+        public string deploySampleGUIName = "Deploy Samples";
+        [KSPField]
+        public string stowSampleGUIName = "Stow Samples";
+
         [KSPField]
         public int experimentsLimit = 1;
         [KSPField(isPersistant = true)]
@@ -66,6 +72,7 @@ namespace UniversalStorage2
         private List<ScienceData> _storedScienceReportList = new List<ScienceData>();
 
         private ExperimentsResultDialog _resultsDialog;
+        private PopupDialog _overwriteDialog;
         
         private Animation _deployAnim;
         private Animation[] _sampleAnims;
@@ -87,12 +94,13 @@ namespace UniversalStorage2
         private BaseAction _baseDeployAction;
         private BaseAction _baseResetAction;
 
-        private PopupDialog _overwriteDialog;
-
         private bool _silentDeploy;
 
         private string _localizedDeployString = "Deploy";
         private string _localizedRetractString = "Retract";
+        private string _localizedSampleDeployString = "Deploy Samples";
+        private string _localizedSampleStowString = "Stow Samples";
+
         private string _localizedToggleActionString = "Toggle";
         private string _localizedGreebleString = "Toggle Greebles";
 
@@ -100,12 +108,17 @@ namespace UniversalStorage2
         private string _localizedStorageFullString = "<color=orange>[<<1>>]: Cannot run experiment; science module full</color>";
         private string _localizedConcurrentFullString = "<color=orange>[<<1>>]: Can only store 1 sample at a time";
 
+        private Coroutine _waitForDoors;
+        private bool _doorsMoving;
+
         public override void OnAwake()
         {
             base.OnAwake();
 
             _localizedDeployString = Localizer.Format(startEventGUIName);
             _localizedRetractString = Localizer.Format(endEventGUIName);
+            _localizedSampleDeployString = Localizer.Format(deploySampleGUIName);
+            _localizedSampleStowString = Localizer.Format(stowSampleGUIName);
             _localizedToggleActionString = Localizer.Format(toggleEventGUIName);
             _localizedGreebleString = Localizer.Format(greebleToggleName);
 
@@ -177,11 +190,14 @@ namespace UniversalStorage2
 
             if (_sampleAnims != null)
             {
-                for (int i = 0; i < experimentsNumber; i++)
+                if (IsDeployed)
                 {
-                    if (_sampleAnims.Length > i)
+                    for (int i = 0; i < experimentsNumber; i++)
                     {
-                        Animate(1, 1, WrapMode.Default, sampleAnimationName + (i + 1).ToString(), _sampleAnims[i]);
+                        if (_sampleAnims.Length > i)
+                        {
+                            Animate(1, 1, WrapMode.Default, sampleAnimationName + (i + 1).ToString(), _sampleAnims[i]);
+                        }
                     }
                 }
             }
@@ -221,9 +237,6 @@ namespace UniversalStorage2
             }
             else
             {
-                _tglEvent.active = false;
-                _tglAction.active = false;
-
                 if (_greebleTransform != null)
                     _greebleTransform.gameObject.SetActive(false);
             }
@@ -289,6 +302,12 @@ namespace UniversalStorage2
             _reviewInitialData.active = _initialDataList.Count > 0 && _resultsDialog == null;
             _baseCleanExperimentExternal.active = Inoperable && resettableOnEVA && _resultsDialog == null;
             _baseTrasferData.active = hasContainer && dataIsCollectable && _storedScienceReportList.Count > 0;
+
+            if (!greeblesActive)
+            {
+                _tglEvent.active = _storedScienceReportList.Count > 0 || _initialDataList.Count > 0;
+                _tglAction.active = _storedScienceReportList.Count > 0 || _initialDataList.Count > 0;
+            }
         }
 
         private void SetSampleTransforms()
@@ -351,34 +370,154 @@ namespace UniversalStorage2
         [KSPEvent(guiActive = true, guiName = "Deploy", active = true)]
         private void ToggleEvent()
         {
-            if (!greeblesActive)
-            {
-                _tglEvent.active = false;
-                _tglAction.active = false;
-
-                return;
-            }
-
             if (IsDeployed)
             {
-                Animate(-1 * animSpeed, 1, WrapMode.Default, deployAnimationName, _deployAnim);
-                IsDeployed = false;
+                if (greeblesActive)
+                {
+                    _tglEvent.guiName = _localizedDeployString;
 
-                _baseDeployExperiment.active = false;
-                _baseDeployExperimentExternal.active = false;
+                    if (!_doorsMoving)
+                    {
+                        for (int i = experimentsNumber - 1; i >= 0; i--)
+                        {
+                            if (_sampleAnims.Length <= i)
+                                continue;
 
-                _tglEvent.guiName = _localizedDeployString;
+                            if (experimentsReturned > i)
+                                continue;
+
+                            Animate(-1, 1, WrapMode.Default, sampleAnimationName + (i + 1).ToString(), _sampleAnims[i]);
+                        }
+
+                        if (_waitForDoors != null)
+                            StopCoroutine(_waitForDoors);
+
+                        _waitForDoors = StartCoroutine(WaitForSampleStow());
+                    }
+                    else
+                    {
+                        Animate(-1 * animSpeed, 1, WrapMode.Default, deployAnimationName, _deployAnim);
+                    }
+                }
+                else
+                {
+                    _tglEvent.guiName = _localizedSampleDeployString;
+
+                    for (int i = experimentsNumber - 1; i >= 0; i--)
+                    {
+                        if (_sampleAnims.Length <= i)
+                            continue;
+
+                        if (experimentsReturned > i)
+                            continue;
+
+                        Animate(-1, 1, WrapMode.Default, sampleAnimationName + (i + 1).ToString(), _sampleAnims[i]);
+                    }
+                }
+
+                IsDeployed = false;             
             }
             else
             {
-                Animate(1 * animSpeed, 0, WrapMode.Default, deployAnimationName, _deployAnim);
-                IsDeployed = true;
+                if (greeblesActive)
+                {
+                    _tglEvent.guiName = _localizedRetractString;
 
-                _baseDeployExperiment.active = true;
-                _baseDeployExperimentExternal.active = true;
+                    if (experimentsNumber > 0 && experimentsReturned < experimentsNumber)
+                    {
+                        Animate(1 * animSpeed, _deployAnim[deployAnimationName].normalizedTime, WrapMode.Default, deployAnimationName, _deployAnim);
 
-                _tglEvent.guiName = _localizedRetractString;                
+                        if (_waitForDoors != null)
+                            StopCoroutine(_waitForDoors);
+
+                        float time = _deployAnim[deployAnimationName].length;
+
+                        if (_doorsMoving)
+                            time -= _deployAnim[deployAnimationName].time;
+
+                        if (time < 0)
+                            time = 0;
+
+                        _waitForDoors = StartCoroutine(WaitForDoorOpen(time));
+                    }
+                    else
+                    {
+                        Animate(1 * animSpeed, 0, WrapMode.Default, deployAnimationName, _deployAnim);
+                    }
+                }
+                else
+                {
+                    _tglEvent.guiName = _localizedSampleStowString;
+
+                    for (int i = experimentsNumber - 1; i >= 0; i--)
+                    {
+                        if (_sampleAnims.Length <= i)
+                            continue;
+
+                        if (experimentsReturned > i)
+                            continue;
+
+                        Animate(1, 0, WrapMode.Default, sampleAnimationName + (i + 1).ToString(), _sampleAnims[i]);
+                    }
+                }
+
+                IsDeployed = true;           
             }
+        }
+
+        private IEnumerator WaitForSampleStow()
+        {
+            float time = 0;
+
+            _doorsMoving = false;
+
+            for (int i = experimentsNumber - 1; i >= 0; i--)
+            {
+                if (_sampleAnims.Length <= i)
+                    continue;
+
+                if (experimentsReturned > i)
+                    continue;
+
+                float l = _sampleAnims[i][sampleAnimationName + (i + 1).ToString()].length;
+
+                if (l > time)
+                    time = l;
+            }
+
+            yield return new WaitForSeconds(time);
+
+            _doorsMoving = true;
+
+            Animate(-1 * animSpeed, 1, WrapMode.Default, deployAnimationName, _deployAnim);
+
+            yield return new WaitForSeconds(_deployAnim[deployAnimationName].length);
+
+            _doorsMoving = false;
+
+            _waitForDoors = null;
+        }
+
+        private IEnumerator WaitForDoorOpen(float time)
+        {
+            _doorsMoving = true;
+
+            yield return new WaitForSeconds(time);
+
+            _doorsMoving = false;
+
+            for (int i = experimentsNumber - 1; i >= 0; i--)
+            {
+                if (_sampleAnims.Length <= i)
+                    continue;
+
+                if (experimentsReturned > i)
+                    continue;
+
+                Animate(1, 0, WrapMode.Default, sampleAnimationName + (i + 1).ToString(), _sampleAnims[i]);
+            }
+
+            _waitForDoors = null;
         }
 
         [KSPAction("Toggle")]
@@ -712,6 +851,8 @@ namespace UniversalStorage2
             if (!overwrite)
                 experimentsNumber++;
 
+            IsDeployed = true;
+
             if (!overwrite && _sampleAnims != null && _sampleAnims.Length >= experimentsNumber)
             {
                 Animate(1, 0, WrapMode.Default, sampleAnimationName + (experimentsNumber).ToString(), _sampleAnims[experimentsNumber - 1]);
@@ -769,6 +910,9 @@ namespace UniversalStorage2
                 else
                     initialResultsPage();
             }
+
+            if (!greeblesActive)
+                _tglEvent.guiName = _localizedSampleStowString;
         }
 
         private ScienceData MakeData()
@@ -1021,7 +1165,7 @@ namespace UniversalStorage2
             {
                 _storedScienceReportList.Remove(data);
 
-                if (_sampleAnims != null && _sampleAnims.Length >= experimentsNumber)
+                if (IsDeployed && _sampleAnims != null && _sampleAnims.Length >= experimentsNumber)
                 {
                     Animate(-1, 1, WrapMode.Default, sampleAnimationName + (experimentsNumber).ToString(), _sampleAnims[experimentsNumber - 1]);
                 }
@@ -1080,7 +1224,7 @@ namespace UniversalStorage2
             {
                 _initialDataList.Remove(data);
 
-                if (_sampleAnims != null && _sampleAnims.Length >= experimentsNumber)
+                if (IsDeployed && _sampleAnims != null && _sampleAnims.Length >= experimentsNumber)
                 {
                     Animate(-1, 1, WrapMode.Default, sampleAnimationName + (experimentsNumber).ToString(), _sampleAnims[experimentsNumber - 1]);
                 }
