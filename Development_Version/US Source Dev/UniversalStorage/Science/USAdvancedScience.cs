@@ -109,7 +109,6 @@ namespace UniversalStorage2
         private string _localizedConcurrentFullString = "<color=orange>[<<1>>]: Can only store 1 sample at a time";
 
         private Coroutine _waitForDoors;
-        private bool _doorsMoving;
 
         public override void OnAwake()
         {
@@ -375,29 +374,24 @@ namespace UniversalStorage2
                 if (greeblesActive)
                 {
                     _tglEvent.guiName = _localizedDeployString;
+                    _tglEvent.active = false;
+                    _tglAction.active = false;
 
-                    if (!_doorsMoving)
+                    for (int i = experimentsNumber - 1; i >= 0; i--)
                     {
-                        for (int i = experimentsNumber - 1; i >= 0; i--)
-                        {
-                            if (_sampleAnims.Length <= i)
-                                continue;
+                        if (_sampleAnims.Length <= i)
+                            continue;
 
-                            if (experimentsReturned > i)
-                                continue;
+                        if (experimentsReturned > i)
+                            continue;
 
-                            Animate(-1, 1, WrapMode.Default, sampleAnimationName + (i + 1).ToString(), _sampleAnims[i]);
-                        }
-
-                        if (_waitForDoors != null)
-                            StopCoroutine(_waitForDoors);
-
-                        _waitForDoors = StartCoroutine(WaitForSampleStow());
+                        Animate(-1, 1, WrapMode.Default, sampleAnimationName + (i + 1).ToString(), _sampleAnims[i]);
                     }
-                    else
-                    {
-                        Animate(-1 * animSpeed, 1, WrapMode.Default, deployAnimationName, _deployAnim);
-                    }
+
+                    if (_waitForDoors != null)
+                        StopCoroutine(_waitForDoors);
+
+                    _waitForDoors = StartCoroutine(WaitForSampleStow());
                 }
                 else
                 {
@@ -425,20 +419,15 @@ namespace UniversalStorage2
 
                     if (experimentsNumber > 0 && experimentsReturned < experimentsNumber)
                     {
-                        Animate(1 * animSpeed, _deployAnim[deployAnimationName].normalizedTime, WrapMode.Default, deployAnimationName, _deployAnim);
+                        _tglEvent.active = false;
+                        _tglAction.active = false;
+
+                        Animate(1 * animSpeed, 0, WrapMode.Default, deployAnimationName, _deployAnim);
 
                         if (_waitForDoors != null)
                             StopCoroutine(_waitForDoors);
 
-                        float time = _deployAnim[deployAnimationName].length;
-
-                        if (_doorsMoving)
-                            time -= _deployAnim[deployAnimationName].time;
-
-                        if (time < 0)
-                            time = 0;
-
-                        _waitForDoors = StartCoroutine(WaitForDoorOpen(time));
+                        _waitForDoors = StartCoroutine(WaitForDoorOpen());
                     }
                     else
                     {
@@ -468,9 +457,7 @@ namespace UniversalStorage2
         private IEnumerator WaitForSampleStow()
         {
             float time = 0;
-
-            _doorsMoving = false;
-
+            
             for (int i = experimentsNumber - 1; i >= 0; i--)
             {
                 if (_sampleAnims.Length <= i)
@@ -486,26 +473,21 @@ namespace UniversalStorage2
             }
 
             yield return new WaitForSeconds(time);
-
-            _doorsMoving = true;
-
+            
             Animate(-1 * animSpeed, 1, WrapMode.Default, deployAnimationName, _deployAnim);
 
             yield return new WaitForSeconds(_deployAnim[deployAnimationName].length);
 
-            _doorsMoving = false;
+            _tglEvent.active = true;
+            _tglAction.active = true;
 
             _waitForDoors = null;
         }
 
-        private IEnumerator WaitForDoorOpen(float time)
+        private IEnumerator WaitForDoorOpen()
         {
-            _doorsMoving = true;
-
-            yield return new WaitForSeconds(time);
-
-            _doorsMoving = false;
-
+            yield return new WaitForSeconds(_deployAnim[deployAnimationName].length);
+            
             for (int i = experimentsNumber - 1; i >= 0; i--)
             {
                 if (_sampleAnims.Length <= i)
@@ -516,6 +498,9 @@ namespace UniversalStorage2
 
                 Animate(1, 0, WrapMode.Default, sampleAnimationName + (i + 1).ToString(), _sampleAnims[i]);
             }
+
+            _tglEvent.active = true;
+            _tglAction.active = true;
 
             _waitForDoors = null;
         }
@@ -550,9 +535,9 @@ namespace UniversalStorage2
 
         new public void ResetExperiment()
         {
-            if (_storedScienceReportList.Count > 0)
+            if (_storedScienceReportList.Count > 0 || _initialDataList.Count > 0)
             {
-                if (_sampleAnims != null)
+                if (IsDeployed && _sampleAnims != null)
                 {
                     for (int i = experimentsNumber - 1; i >= experimentsReturned; i--)
                     {
@@ -568,7 +553,11 @@ namespace UniversalStorage2
                     foreach (ScienceData data in _storedScienceReportList)
                         experimentsNumber--;
 
+                    foreach (ScienceData data in _initialDataList)
+                        experimentsNumber--;
+
                     _storedScienceReportList.Clear();
+                    _initialDataList.Clear();
 
                     if (experimentsNumber < 0)
                         experimentsNumber = 0;
@@ -727,6 +716,11 @@ namespace UniversalStorage2
             DeployExperiment();
         }
 
+        new public void DeployAction(KSPActionParam param)
+        {
+            DeployExperiment();
+        }
+
         new public void DeployExperiment()
         {
             GatherScienceData();
@@ -812,15 +806,18 @@ namespace UniversalStorage2
 
             if (Deployed)
             {
-                _silentDeploy = silent;
-                _overwriteDialog = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f)
-                    , new MultiOptionDialog("OverwriteExperiment", Localizer.Format("#autoLOC_238370", experiment.experimentTitle)
-                    , Localizer.Format("#autoLOC_238371", experiment.experimentTitle)
-                    , HighLogic.UISkin, new DialogGUIBase[]
-                    {
-                        new DialogGUIButton(experimentActionName, new Callback(OverrideGatherScienceData)),
-                        new DialogGUIButton(Localizer.Format("#autoLOC_253501"), null)
-                    }), false, HighLogic.UISkin, true, string.Empty);
+                ScreenMessages.PostScreenMessage(_localizedStorageFullString, 5, ScreenMessageStyle.UPPER_LEFT);
+
+                //_silentDeploy = silent;
+                //_overwriteDialog = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f)
+                //    , new MultiOptionDialog("OverwriteExperiment", Localizer.Format("#autoLOC_238370", experiment.experimentTitle)
+                //    , Localizer.Format("#autoLOC_238371", experiment.experimentTitle)
+                //    , HighLogic.UISkin, new DialogGUIBase[]
+                //    {
+                //        new DialogGUIButton(experimentActionName, new Callback(OverrideGatherScienceData)),
+                //        new DialogGUIButton(Localizer.Format("#autoLOC_253501"), null)
+                //    }), false, HighLogic.UISkin, true, string.Empty);
+
                 return false;
             }
 
