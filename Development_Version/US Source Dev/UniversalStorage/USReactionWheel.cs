@@ -14,6 +14,8 @@ namespace UniversalStorage2
         [KSPField]
         public string WheelTransformName;
         [KSPField]
+        public int WheelOrientation = 1;
+        [KSPField]
         public bool DebugMode = false;
 
         private ModuleReactionWheel _reactionWheel;
@@ -22,17 +24,40 @@ namespace UniversalStorage2
 
         private float _targetSpeed;
         private float _currentSpeed;
-        
+        private Vector3 _rotationAxis;
+
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
-            
+
             Fields["MaxRotation"].guiActive = DebugMode;
-            Fields["MaxRotation"].guiActiveEditor= DebugMode;
+            Fields["MaxRotation"].guiActiveEditor = DebugMode;
             Fields["WheelSpeed"].guiActive = DebugMode;
             Fields["WheelSpeed"].guiActiveEditor = DebugMode;
             Fields["WheelAcceleration"].guiActive = DebugMode;
             Fields["WheelAcceleration"].guiActiveEditor = DebugMode;
+
+            switch (WheelOrientation)
+            {
+                case 1:
+                    _rotationAxis = Vector3.up;
+                    break;
+                case 2:
+                    _rotationAxis = Vector3.right;
+                    break;
+                case 3:
+                    _rotationAxis = Vector3.forward;
+                    break;
+                case -1:
+                    _rotationAxis = Vector3.up * -1;
+                    break;
+                case -2:
+                    _rotationAxis = Vector3.right * -1;
+                    break;
+                case -3:
+                    _rotationAxis = Vector3.forward * -1;
+                    break;
+            }
         }
 
         public override void OnStartFinished(StartState state)
@@ -62,7 +87,7 @@ namespace UniversalStorage2
                     continue;
 
                 if (_wheelTransforms[i].gameObject.activeInHierarchy)
-                    _wheelTransforms[i].Rotate(Vector3.up, _currentSpeed);
+                    _wheelTransforms[i].Rotate(_rotationAxis, _currentSpeed);
             }
         }
     }
