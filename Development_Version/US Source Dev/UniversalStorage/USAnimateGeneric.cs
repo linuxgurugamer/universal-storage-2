@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEngine;
 using KSP.Localization;
 
@@ -40,7 +41,7 @@ namespace UniversalStorage2
 		public string combinedEndEventGUIName = "Retract All Bays";
 		[KSPField]
 		public string combinedToggleActionName = "Toggle All Bays";
-		[KSPField(isPersistant = true)]
+        [KSPField(isPersistant = true)]
 		public bool primaryDeployed = false;
 		[KSPField(isPersistant = true)]
 		public bool secondaryDeployed = false;
@@ -130,6 +131,8 @@ namespace UniversalStorage2
         public string SecondaryDoorObstructionLength = string.Empty;
         [KSPField]
         public bool ObstructionDebugLines = false;
+        [KSPField]
+        public bool SolarPanelToggle = false;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = -1;
         //[KSPField(isPersistant = true)]
@@ -178,6 +181,7 @@ namespace UniversalStorage2
         private USJettisonSwitch[] jettisonModules;
         private USDragSwitch dragModule;
         private USRadiatorSwitch radiatorModule;
+        private USSolarSwitch solarModule;
         
         private int[] _SwitchIndices;
 
@@ -264,7 +268,7 @@ namespace UniversalStorage2
 
             lockEventSecondary = Events["lockSecondaryDoorsEvent"];
             lockEventSecondary.active = allowDoorLock;
-
+            
             jettEvent = Events["jettisonEvent"];
             jettAction = Actions["jettisonAction"];
             jettEvent.active = false;
@@ -288,7 +292,7 @@ namespace UniversalStorage2
 			onStop = new EventData<float>(string.Format("{0}_{1}_onStop", part.partName, part.flightID));
 			onMove = new EventData<float, float>(string.Format("{0}_{1}_onMove", part.partName, part.flightID));
         }
-
+        
         public override void OnStart(PartModule.StartState state)
         {
             base.OnStart(state);
@@ -318,6 +322,9 @@ namespace UniversalStorage2
 
                 jettEvent.guiActive = !jettisonDeployedOnly && !jettisonStowedOnly;
             }
+
+            if (SolarPanelToggle)
+                solarModule = part.FindModuleImplementing<USSolarSwitch>();
 
             _animSpeed = customAnimationSpeed;
         }
@@ -635,13 +642,16 @@ namespace UniversalStorage2
                                     else
                                         radiatorModule.Enable();
                                 }
-							}
-							else
-							{
-								//debug.debugMessage(string.Format("Animation {0} playing - Time: {1:F2}", primaryAnimationName, anim[primaryAnimationName].normalizedTime));
-								_primaryAnimTime = anim[primaryAnimationName].normalizedTime;
-								primaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
-								SetDragCubes(1 - _primaryAnimTime);
+
+                                if (SolarPanelToggle && solarModule != null)
+                                    solarModule.DeploySolarPanels(_primaryAnimTime > 0);
+                            }
+                            else
+                            {
+                                //debug.debugMessage(string.Format("Animation {0} playing - Time: {1:F2}", primaryAnimationName, anim[primaryAnimationName].normalizedTime));
+                                _primaryAnimTime = anim[primaryAnimationName].normalizedTime;
+                                primaryAnimationState = ModuleAnimateGeneric.animationStates.MOVING;
+                                SetDragCubes(1 - _primaryAnimTime);
 
                                 if (anim[primaryAnimationName].speed > 0)
                                 {
@@ -669,7 +679,7 @@ namespace UniversalStorage2
                                         anim.Stop(primaryAnimationName);
                                     }
                                 }
-							}
+                            }
 						}
 					}
 
