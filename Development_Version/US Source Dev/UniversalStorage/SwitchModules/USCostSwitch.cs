@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Generic;
 using KSP.Localization;
 
 namespace UniversalStorage2
@@ -20,6 +21,8 @@ namespace UniversalStorage2
         private double[] _Costs;
         private EventData<int, Part, USFuelSwitch> onFuelRequestCost;
         private bool _updateCost = true;
+
+        private List<IPartCostModifier> _partCostModifiers = new List<IPartCostModifier>();
 
         private string _localizedDryCostString = "Part Cost";
 
@@ -43,6 +46,17 @@ namespace UniversalStorage2
             
             if (String.IsNullOrEmpty(AddedCost))
                 return;
+
+            _partCostModifiers = part.FindModulesImplementing<IPartCostModifier>();
+
+            for (int i = _partCostModifiers.Count - 1; i >= 0; i--)
+            {
+                if (_partCostModifiers[i] == (IPartCostModifier)this)
+                {
+                    _partCostModifiers.RemoveAt(i);
+                    break;
+                }
+            }
 
             _Costs = USTools.parseDoubles(AddedCost).ToArray();
 
@@ -111,8 +125,15 @@ namespace UniversalStorage2
 
             if (_Costs != null && _Costs.Length >= CurrentSelection)
                 cost = (float)_Costs[CurrentSelection];
+
+            float otherCosts = 0;
+
+            for (int i = _partCostModifiers.Count - 1; i >= 0; i--)
+            {
+                otherCosts += _partCostModifiers[i].GetModuleCost(0, ModifierStagingSituation.CURRENT);
+            }
             
-            AddedCostValue = part.partInfo.cost + cost;
+            AddedCostValue = part.partInfo.cost + cost + otherCosts;
 
             return cost;
         }
