@@ -370,6 +370,9 @@ namespace UniversalStorage2
 
         protected override void onSwitch(int index, int selection, Part p)
         {
+            if (!_switcher)
+                return;
+
             if (SolarPanelsLocked)
                 return;
 
