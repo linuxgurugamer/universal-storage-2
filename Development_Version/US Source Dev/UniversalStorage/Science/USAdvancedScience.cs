@@ -604,13 +604,13 @@ namespace UniversalStorage2
             
             if (!FlightGlobals.ActiveVessel.parts[0].protoModuleCrew[0].HasEffect<ScienceResetSkill>())
             {
-                ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238776", part.partInfo.title), 5f, ScreenMessageStyle.UPPER_LEFT);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238776", part.partInfo.title), 5f, ScreenMessageStyle.UPPER_LEFT);
                 return;
             }
 
             OnLabReset();
 
-            ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238770", part.partInfo.title), 6f, ScreenMessageStyle.UPPER_LEFT);
+            ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238770", part.partInfo.title), 6f, ScreenMessageStyle.UPPER_LEFT);
         }
 
         private void OnLabReset()
@@ -662,7 +662,7 @@ namespace UniversalStorage2
 
             if (_storedScienceReportList.Count <= 0)
             {
-                ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238567", part.partInfo.title), 3, ScreenMessageStyle.UPPER_CENTER);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238567", part.partInfo.title), 3, ScreenMessageStyle.UPPER_CENTER);
                 return;
             }
 
@@ -670,15 +670,15 @@ namespace UniversalStorage2
 
             if (container == null)
             {
-                ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238572", part.partInfo.title, p.partInfo.title), 5, ScreenMessageStyle.UPPER_CENTER);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238572", part.partInfo.title, p.partInfo.title), 5, ScreenMessageStyle.UPPER_CENTER);
                 return;
             }
 
             if ((experimentsReturned >= (experimentsLimit - 1)) && !rerunnable)
             {
                 List<DialogGUIBase> dialog = new List<DialogGUIBase>();
-                dialog.Add(new DialogGUIButton<ModuleScienceContainer>(Localizer.Format("autoLOC_7003412"), new Callback<ModuleScienceContainer>(onTransferData), container));
-                dialog.Add(new DialogGUIButton(Localizer.Format("autoLOC_226976"), null, true));
+                dialog.Add(new DialogGUIButton<ModuleScienceContainer>(Localizer.Format("#autoLOC_7003412"), new Callback<ModuleScienceContainer>(onTransferData), container));
+                dialog.Add(new DialogGUIButton(Localizer.Format("#autoLOC_226976"), null, true));
 
                 PopupDialog.SpawnPopupDialog(
                     new Vector2(0.5f, 0.5f),
@@ -686,7 +686,7 @@ namespace UniversalStorage2
                     new MultiOptionDialog(
                         "DMDataTransfer",
                         collectWarningText,
-                        part.partInfo.title + Localizer.Format("autoLOC_236416"),
+                        part.partInfo.title + Localizer.Format("#autoLOC_236416"),
                         UISkinManager.defaultSkin,
                         dialog.ToArray()
                         ),
@@ -706,9 +706,9 @@ namespace UniversalStorage2
                 return;
 
             if (target.StoreData(new List<IScienceDataContainer> { this }, false))
-                ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238582", target.part.partInfo.title), 5, ScreenMessageStyle.UPPER_LEFT);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238582", target.part.partInfo.title), 5, ScreenMessageStyle.UPPER_LEFT);
             else
-                ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238589", target.part.partInfo.title), 5, ScreenMessageStyle.UPPER_LEFT);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238589", target.part.partInfo.title), 5, ScreenMessageStyle.UPPER_LEFT);
         }
 
         new public void DeployExperimentExternal()
@@ -777,7 +777,7 @@ namespace UniversalStorage2
             }
             if (!experiment.IsAvailableWhile(ScienceUtil.GetExperimentSituation(vessel), vessel.mainBody))
             {
-                ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238424", experiment.experimentTitle), 5, ScreenMessageStyle.UPPER_CENTER);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238424", experiment.experimentTitle), 5, ScreenMessageStyle.UPPER_CENTER);
                 return false;
             }
             if (FlightGlobals.ActiveVessel.isEVA)
@@ -869,7 +869,7 @@ namespace UniversalStorage2
                 if (!silent)
                     ReviewData();
                 else
-                    ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238419", part.partInfo.title, data.dataAmount.ToString(), data.title), 8, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238419", part.partInfo.title, data.dataAmount.ToString(), data.title), 8, ScreenMessageStyle.UPPER_LEFT);
             }
             else
             {
@@ -902,7 +902,7 @@ namespace UniversalStorage2
                 {
                     onKeepInitialData(data);
 
-                    ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238419", part.partInfo.title, data.dataAmount.ToString(), data.title), 8, ScreenMessageStyle.UPPER_LEFT);
+                    ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238419", part.partInfo.title, data.dataAmount.ToString(), data.title), 8, ScreenMessageStyle.UPPER_LEFT);
                 }
                 else
                     initialResultsPage();
@@ -1193,9 +1193,9 @@ namespace UniversalStorage2
                 DumpData(data);
             }
             else if (CommNet.CommNetScenario.CommNetEnabled)
-                ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238505"), 3f, ScreenMessageStyle.UPPER_CENTER);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238505"), 3f, ScreenMessageStyle.UPPER_CENTER);
             else
-                ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238507"), 3f, ScreenMessageStyle.UPPER_CENTER);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238507"), 3f, ScreenMessageStyle.UPPER_CENTER);
         }
 
         private void onSendToLab(ScienceData data)
@@ -1263,9 +1263,9 @@ namespace UniversalStorage2
                 DumpInitialData(data);
             }
             else if (CommNet.CommNetScenario.CommNetEnabled)
-                ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238505"), 3f, ScreenMessageStyle.UPPER_CENTER);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238505"), 3f, ScreenMessageStyle.UPPER_CENTER);
             else
-                ScreenMessages.PostScreenMessage(Localizer.Format("autoLOC_238507"), 3f, ScreenMessageStyle.UPPER_CENTER);
+                ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238507"), 3f, ScreenMessageStyle.UPPER_CENTER);
         }
 
         private void onSendInitialToLab(ScienceData data)
