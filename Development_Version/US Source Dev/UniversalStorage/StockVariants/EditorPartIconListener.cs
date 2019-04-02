@@ -23,14 +23,14 @@ namespace UniversalStorage2.StockVariants
 
         private void Start()
         {
-            if (!HighLogic.LoadedSceneIsEditor)
-                return;
+            if (HighLogic.LoadedSceneIsEditor || HighLogic.LoadedScene == GameScenes.SPACECENTER)
+            {
+                icon = GetComponentInParent<EditorPartIcon>();
 
-            icon = GetComponentInParent<EditorPartIcon>();
+                PartIconSpawn();
 
-            PartIconSpawn();
-
-            //USVariantController.OnEditorPartIconSpawn.Invoke(icon);
+                //USVariantController.OnEditorPartIconSpawn.Invoke(icon);
+            }
         }
 
         private void OnDestroy()
@@ -110,23 +110,17 @@ namespace UniversalStorage2.StockVariants
 
             _partInfo = icon.partInfo;
 
-            //USdebugMessages.USStaticLog("Activating US Switch icon buttons");
-
-            icon.btnSwapTexture.gameObject.SetActive(true);
-
-            icon.btnSwapTexture.onClick.RemoveAllListeners();
-
             //USdebugMessages.USStaticLog("Editor icon: {0}", icon.partInfo.iconPrefab.name);
 
             string clone = _partInfo.iconPrefab.name + "(Clone)";
-            
+
             var children = icon.GetComponentsInChildren<Transform>(true);
 
             for (int i = children.Length - 1; i >= 0; i--)
             {
                 if (children[i].name == clone)
                 {
-                    // USdebugMessages.USStaticLog("Found Editor icon: {0}", children[i].name);
+                    //USdebugMessages.USStaticLog("Found Editor icon: {0}", children[i].name);
 
                     _partIconTransform = children[i];
 
@@ -137,30 +131,46 @@ namespace UniversalStorage2.StockVariants
             if (_partIconTransform == null)
                 return;
 
-            if (secondary)
+            if (HighLogic.LoadedSceneIsEditor)
             {
-                Button secondaryButton = Instantiate(icon.btnSwapTexture, icon.btnSwapTexture.transform.parent, false);
+                //USdebugMessages.USStaticLog("Activating US Switch icon buttons");
 
-                RectTransform secondRect = secondaryButton.GetComponent<RectTransform>();
+                icon.btnSwapTexture.gameObject.SetActive(true);
 
-                secondRect.anchorMin = new Vector2(1, 0);
-                secondRect.anchorMax = new Vector2(1, 0);
+                icon.btnSwapTexture.onClick.RemoveAllListeners();
 
-                secondRect.anchoredPosition = new Vector2(-4, secondRect.anchoredPosition.y);
+                if (secondary)
+                {
+                    Button secondaryButton = Instantiate(icon.btnSwapTexture, icon.btnSwapTexture.transform.parent, false);
 
-                secondaryButton.onClick.AddListener(delegate { ToggleSecondaryVariant(_partInfo); });
+                    RectTransform secondRect = secondaryButton.GetComponent<RectTransform>();
 
-                if (switches != null && switches.Count > 1)
-                    switches[1].EditorToggleVariant(_partInfo, _partIconTransform, false);
+                    secondRect.anchorMin = new Vector2(1, 0);
+                    secondRect.anchorMax = new Vector2(1, 0);
 
-                if (onSecondaryVariantSwitched != null)
-                    onSecondaryVariantSwitched.Add(OnSecondaryVariantSwitch);
+                    secondRect.anchoredPosition = new Vector2(-4, secondRect.anchoredPosition.y);
+
+                    secondaryButton.onClick.AddListener(delegate { ToggleSecondaryVariant(_partInfo); });
+                }
+
+                icon.btnSwapTexture.onClick.AddListener(delegate { TogglePrimaryVariant(_partInfo); });
+
             }
 
-            icon.btnSwapTexture.onClick.AddListener(delegate { TogglePrimaryVariant(_partInfo); });
+            if (onPrimaryVariantSwitched != null)
+                onPrimaryVariantSwitched.Add(OnPrimaryVariantSwitch);
 
             if (switches != null && switches.Count > 0)
                 switches[0].EditorToggleVariant(_partInfo, _partIconTransform, false);
+
+            if (secondary)
+            {
+                if (onSecondaryVariantSwitched != null)
+                    onSecondaryVariantSwitched.Add(OnSecondaryVariantSwitch);
+
+                if (switches != null && switches.Count > 1)
+                    switches[1].EditorToggleVariant(_partInfo, _partIconTransform, false);
+            }
 
             //USdebugMessages.USStaticLog("Original Icon: {7}: Scale: {0:F4} - Rotation: {1:F4} - Position: {2:F4}\nChild: {6}: Scale: {3:F4} - Rotation: {4:F4} - Position: {5:F4}"
             //    , _partIconTransform.localScale, _partIconTransform.localRotation, _partIconTransform.localPosition
@@ -168,9 +178,6 @@ namespace UniversalStorage2.StockVariants
             //    , _partIconTransform.GetChild(0).name, _partIconTransform.name);
 
             UpdateIconScale();
-
-            if (onPrimaryVariantSwitched != null)
-                onPrimaryVariantSwitched.Add(OnPrimaryVariantSwitch);
         }
 
         private void UpdateIconScale()

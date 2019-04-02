@@ -10,10 +10,11 @@ using TMPro;
 
 namespace UniversalStorage2.StockVariants
 {
-    [KSPAddon(KSPAddon.Startup.EditorAny, false)]
+    [KSPAddon(KSPAddon.Startup.FlightEditorAndKSC, false)]
     public class USVariantController : MonoBehaviour
     {
         private static bool _iconPrefabProcessed;
+        private static bool _rdPrefabProcessed;
         //private static bool _tooltipPrefabProcessed;
 
         private bool _activeSwitcher;
@@ -38,6 +39,12 @@ namespace UniversalStorage2.StockVariants
 
         private void Awake()
         {
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                Destroy(gameObject);
+                return;
+            }
+
             if (_instance != null && _instance != this)
             {
                 Destroy(gameObject);
@@ -46,13 +53,17 @@ namespace UniversalStorage2.StockVariants
 
             _instance = this;
 
-            if (!_iconPrefabProcessed)
+            if (!_iconPrefabProcessed && HighLogic.LoadedSceneIsEditor)
                 ProcessEditorIconPrefab();
+
+            if (!_rdPrefabProcessed && HighLogic.LoadedScene == GameScenes.SPACECENTER)
+                GameEvents.onGUIRnDComplexSpawn.Add(RnDSpawn);
 
             //if (!_tooltipPrefabProcessed)
             //    ProcessEditorTooltipPrefab();
 
-            ProcessUIPrefab();
+            if (HighLogic.LoadedSceneIsEditor)
+                ProcessUIPrefab();
 
             GameEvents.onTooltipSpawned.Add(OnTooltipSpawned);
             GameEvents.onTooltipDespawned.Add(OnTooltipDespawn);
@@ -65,6 +76,13 @@ namespace UniversalStorage2.StockVariants
 
             GameEvents.onTooltipSpawned.Remove(OnTooltipSpawned);
             GameEvents.onTooltipDespawned.Remove(OnTooltipDespawn);
+            GameEvents.onGUIRnDComplexSpawn.Remove(RnDSpawn);
+        }
+
+        private void RnDSpawn()
+        {
+            if (!_rdPrefabProcessed && HighLogic.LoadedScene == GameScenes.SPACECENTER)
+                ProcessRDrIconPrefab();
         }
 
         private void ProcessEditorIconPrefab()
@@ -87,7 +105,28 @@ namespace UniversalStorage2.StockVariants
 
             _iconPrefabProcessed = true;
         }
-        
+
+        private void ProcessRDrIconPrefab()
+        {
+            USdebugMessages.USStaticLog("Processing R&D Icon Prefab...");
+
+            StartCoroutine(WaitForRDIconPrefab());
+        }
+
+        private IEnumerator WaitForRDIconPrefab()
+        {
+            yield return new WaitForEndOfFrame();
+
+            while (RDController.Instance == null)
+                yield return null;
+
+            USdebugMessages.USStaticLog("R&D Part List Ready...");
+
+            RDController.Instance.partList.partListItem.GetComponentInChildren<RDPartListItem>().gameObject.AddOrGetComponent<EditorPartIconListener>();
+
+            _rdPrefabProcessed = true;
+        }
+
         private void ProcessUIPrefab()
         {
             USdebugMessages.USStaticLog("Processing UI Part Action Controller Spawner...");
@@ -156,25 +195,25 @@ namespace UniversalStorage2.StockVariants
         {
             if (!(tooltip is PartListTooltip))
                 return;
-
+            
             if (!(controller is PartListTooltipController))
                 return;
-
+            
             PartListTooltipController partListController = controller as PartListTooltipController;
 
             if (partListController == null)
                 return;
-
+            
             PartListTooltip partListTooltip = tooltip as PartListTooltip;
 
             if (partListTooltip == null)
                 return;
-
+            
             EditorPartIcon baseIcon = partListController.GetComponent<EditorPartIcon>();
 
             if (baseIcon == null)
                 return;
-
+            
             AvailablePart partInfo = baseIcon.partInfo;
 
             USSwitchControl primarySwitch = null;
