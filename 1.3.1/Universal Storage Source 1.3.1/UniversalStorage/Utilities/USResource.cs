@@ -1,6 +1,6 @@
 ﻿
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
 	public class USResource
 	{

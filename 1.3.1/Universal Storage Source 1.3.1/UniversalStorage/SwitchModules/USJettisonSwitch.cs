@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
     public class USJettisonSwitch : USBaseSwitch
     {

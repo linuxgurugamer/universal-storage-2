@@ -2,7 +2,7 @@
 using System;
 using KSP.Localization;
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
     public class USCostSwitch : USBaseSwitch, IPartCostModifier
     {

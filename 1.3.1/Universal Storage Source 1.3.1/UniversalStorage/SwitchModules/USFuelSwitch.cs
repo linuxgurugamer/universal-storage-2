@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using KSP.Localization;
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
 	public class USFuelSwitch : PartModule, IPartCostModifier, IPartMassModifier
     {

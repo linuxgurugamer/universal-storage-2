@@ -2,7 +2,7 @@
 using UnityEngine;
 using KSP.Localization;
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
 	public class USAnimateGeneric : PartModule, IScalarModule
 	{

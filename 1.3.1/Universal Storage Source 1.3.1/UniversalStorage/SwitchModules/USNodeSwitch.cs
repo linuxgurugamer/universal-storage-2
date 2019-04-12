@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
     public class USNodeSwitch : USBaseSwitch
     {

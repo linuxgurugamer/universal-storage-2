@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
     public class USBaseSwitch : PartModule
     {

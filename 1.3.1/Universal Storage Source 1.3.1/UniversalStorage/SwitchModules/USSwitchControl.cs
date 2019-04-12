@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Text;
 using KSP.Localization;
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
     public class USSwitchControl : PartModule
     {

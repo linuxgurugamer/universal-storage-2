@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using System.Reflection;
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
     public static class USTools
     {

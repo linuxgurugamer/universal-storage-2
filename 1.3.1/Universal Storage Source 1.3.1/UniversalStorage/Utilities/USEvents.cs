@@ -1,7 +1,7 @@
 ﻿
 using UnityEngine;
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
     public class USEvents : MonoBehaviour

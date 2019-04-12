@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UniversalStorage
+namespace UniversalStorage2
 {
     public class USMeshSwitch : USBaseSwitch
     {
