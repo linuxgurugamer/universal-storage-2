@@ -16,6 +16,8 @@ namespace UniversalStorage2
         [KSPField]
         public int WheelOrientation = 1;
         [KSPField]
+        public bool MaintainWorldRotation = false;
+        [KSPField]
         public bool DebugMode = false;
 
         private ModuleReactionWheel _reactionWheel;
@@ -25,6 +27,8 @@ namespace UniversalStorage2
         private float _targetSpeed;
         private float _currentSpeed;
         private Vector3 _rotationAxis;
+
+        private Quaternion[] _startRotations;
 
         public override void OnStart(StartState state)
         {
@@ -67,6 +71,14 @@ namespace UniversalStorage2
             _wheelTransforms = part.FindModelTransforms(WheelTransformName);
 
             _reactionWheel = part.FindModuleImplementing<ModuleReactionWheel>();
+
+            if (_wheelTransforms != null)
+            {
+                _startRotations = new Quaternion[_wheelTransforms.Length];
+
+                for (int i = _wheelTransforms.Length - 1; i >= 0; i--)
+                    _startRotations[i] = _wheelTransforms[i].rotation;
+            }
         }
 
         private void Update()
@@ -86,8 +98,37 @@ namespace UniversalStorage2
                 if (_wheelTransforms[i] == null || _wheelTransforms[i].gameObject == null)
                     continue;
 
-                if (_wheelTransforms[i].gameObject.activeInHierarchy)
-                    _wheelTransforms[i].Rotate(_rotationAxis, _currentSpeed);
+                if (MaintainWorldRotation)
+                {
+                    Quaternion stationary = Quaternion.Slerp(_wheelTransforms[i].rotation, _startRotations[i], _currentSpeed);
+
+                    Quaternion wheel = _wheelTransforms[i].localRotation;
+
+                    _wheelTransforms[i].rotation = stationary;
+
+                    Quaternion localWheel = _wheelTransforms[i].localRotation;
+
+                    switch (WheelOrientation)
+                    {
+                        case 1:
+                        case -1:
+                            _wheelTransforms[i].localRotation = new Quaternion(wheel.x, localWheel.y, wheel.z, localWheel.w);
+                            break;
+                        case 2:
+                        case -2:
+                            _wheelTransforms[i].localRotation = new Quaternion(localWheel.x, wheel.y, wheel.z, localWheel.w);
+                            break;
+                        case 3:
+                        case -3:
+                            _wheelTransforms[i].localRotation = new Quaternion(wheel.x, wheel.y, localWheel.z, localWheel.w);
+                            break;
+                    }
+                }
+                else
+                {
+                    if (_wheelTransforms[i].gameObject.activeInHierarchy)
+                        _wheelTransforms[i].Rotate(_rotationAxis, _currentSpeed);
+                }
             }
         }
     }
