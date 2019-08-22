@@ -477,7 +477,7 @@ namespace UniversalStorage2
 			if (windowListField == null)
 			{
 				Type cntrType = typeof(UIPartActionController);
-				foreach (FieldInfo info in cntrType.GetFields(BindingFlags.Instance | BindingFlags.NonPublic))
+				foreach (FieldInfo info in cntrType.GetFields(BindingFlags.Instance))
 				{
 					if (info.FieldType == typeof(List<UIPartActionWindow>))
 					{
@@ -485,7 +485,8 @@ namespace UniversalStorage2
 						goto foundField;
 					}
 				}
-				Debug.LogWarning("*PartUtils* Unable to find UIPartActionWindow list");
+
+                Debug.LogWarning("*PartUtils* Unable to find UIPartActionWindow list");
 				return null;
 			}
 		foundField:
