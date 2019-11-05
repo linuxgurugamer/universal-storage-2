@@ -298,7 +298,7 @@ namespace UniversalStorage2
             base.OnStart(state);
             debug = new USdebugMessages(DebugMode, "USAnimateGeneric");
 
-            _DebugLineShader = Shader.Find("Particles/Alpha Blended Premultiply");
+            _DebugLineShader = Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply");
 
             if (!String.IsNullOrEmpty(SwitchID))
             {

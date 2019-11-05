@@ -129,7 +129,7 @@ namespace UniversalStorage2
 
             debug = new USdebugMessages(DebugMode, "USSolarSwitch");
 
-            _DebugLineShader = Shader.Find("Particles/Alpha Blended Premultiply");
+            _DebugLineShader = Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply");
 
             if (String.IsNullOrEmpty(chargeRate))
                 return;
@@ -185,6 +185,9 @@ namespace UniversalStorage2
                 return;
 
             if (!_panelsAvailable)
+                return;
+
+            if (!HighLogic.LoadedSceneIsEditor)
                 return;
 
             IsActive = !IsActive;
