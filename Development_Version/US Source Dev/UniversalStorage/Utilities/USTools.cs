@@ -16,7 +16,7 @@ namespace UniversalStorage2
         {
             get
             {
-                if (_material == null) _material = new Material(Shader.Find("Particles/Alpha Blended"));
+                if (_material == null) _material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended"));
                 return _material;
             }
         }
@@ -474,28 +474,30 @@ namespace UniversalStorage2
 			if (controller == null)
 				return null;
 
-			if (windowListField == null)
-			{
-				Type cntrType = typeof(UIPartActionController);
-				foreach (FieldInfo info in cntrType.GetFields(BindingFlags.Instance))
-				{
-					if (info.FieldType == typeof(List<UIPartActionWindow>))
-					{
-						windowListField = info;
-						goto foundField;
-					}
-				}
+            return controller.GetItem(part, false);
 
-                Debug.LogWarning("*PartUtils* Unable to find UIPartActionWindow list");
-				return null;
-			}
-		foundField:
+		//	if (windowListField == null)
+		//	{
+		//		Type cntrType = typeof(UIPartActionController);
+		//		foreach (FieldInfo info in cntrType.GetFields(BindingFlags.Instance))
+		//		{
+		//			if (info.FieldType == typeof(List<UIPartActionWindow>))
+		//			{
+		//				windowListField = info;
+		//				goto foundField;
+		//			}
+		//		}
 
-			List<UIPartActionWindow> uiPartActionWindows = (List<UIPartActionWindow>)windowListField.GetValue(controller);
-			if (uiPartActionWindows == null)
-				return null;
+  //              Debug.LogWarning("*PartUtils* Unable to find UIPartActionWindow list");
+		//		return null;
+		//	}
+		//foundField:
 
-			return uiPartActionWindows.FirstOrDefault(window => window != null && window.part == part);
+		//	List<UIPartActionWindow> uiPartActionWindows = (List<UIPartActionWindow>)windowListField.GetValue(controller);
+		//	if (uiPartActionWindows == null)
+		//		return null;
+
+		//	return uiPartActionWindows.FirstOrDefault(window => window != null && window.part == part);
 		}
 	}
 }
