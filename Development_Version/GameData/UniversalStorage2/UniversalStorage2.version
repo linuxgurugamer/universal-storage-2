@@ -2,8 +2,8 @@
 "NAME":"Universal Storage 2","URL":"http://ksp-avc.cybutek.net/version.php?id=591",
 "DOWNLOAD":"https://spacedock.info/mod/1933/Universal%20Storage%20II/download/1.6.0.10",
 "CHANGE_LOG_URL":"https://spacedock.info/mod/1933/Universal%20Storage%20II",
-"VERSION":{"MAJOR":1,"MINOR":6,"PATCH":0,"BUILD":10},
-"KSP_VERSION":{"MAJOR":1,"MINOR":6,"PATCH":0},
-"KSP_VERSION_MIN":{"MAJOR":1,"MINOR":4,"PATCH":5},
-"KSP_VERSION_MAX":{"MAJOR":1,"MINOR":6,"PATCH":99}
+"VERSION":{"MAJOR":1,"MINOR":8,"PATCH":0,"BUILD":11},
+"KSP_VERSION":{"MAJOR":1,"MINOR":8,"PATCH":0},
+"KSP_VERSION_MIN":{"MAJOR":1,"MINOR":8,"PATCH":0},
+"KSP_VERSION_MAX":{"MAJOR":1,"MINOR":8,"PATCH":99}
 }
