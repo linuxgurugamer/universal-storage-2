@@ -1,0 +1,16 @@
+, I don't know if this mod is still alive, but I found a tiny little bug in a config file. In the TAC LS section of ComboLifeSupportWedge.cfg, there's the following resource definition:
+
+RESOURCE
+{
+name = Water
+amount = 60
+maxAmount = 60
+}
+It should be:
+
+@RESOURCE[Water]
+{
+@name = Water
+@amount = 60
+@maxAmount = 60
+}

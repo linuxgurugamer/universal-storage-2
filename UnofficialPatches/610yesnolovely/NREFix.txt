@@ -1,0 +1,19 @@
+https://forum.kerbalspaceprogram.com/index.php?/topic/177385-universal-storage-ii-131-and-145-170/&do=findComment&comment=3987794
+
+Looking at the PartIconSpawn, I think the probable issue is marked below - icon.partInfo if null would cause such an exception. I'm not sure if any of the developers are around. It's a shame because I'd love to use US2 parts in 1.11.2
+
+        private void PartIconSpawn()
+        {
+            //USdebugMessages.USStaticLog("Parsing Editor Icon...");
+
+            if (icon == null)
+                return;
+
+            if (!icon.isPart)
+                return;
+
+            if (icon.partInfo.partPrefab == null)
+                return;
+
+            if (icon.partInfo == null) // FIXME: These two lines should be above the previous if/return.
+                return;

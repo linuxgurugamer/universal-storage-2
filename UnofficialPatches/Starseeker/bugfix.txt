@@ -1,0 +1,6 @@
+https://forum.kerbalspaceprogram.com/index.php?/topic/177385-universal-storage-ii-131-and-145-170/&do=findComment&comment=3859626
+
+So, after poking around in the localization & part-config files, I found the root causes of issue #56 on the issue 
+tracker (https://bitbucket.org/uvs2/universalstorage2/issues/56/bug-broken-localization-on-some-parts). The affected shrouds 
+all have "adapter" in the localization tags in the part config, but "adaptor" in the localization file. The other parts 
+all have the # missing from the beginning of the tag in the localization file.

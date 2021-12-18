@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31829.152
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniversalStorage2", "USSourceDev\UniversalStorage\UniversalStorage2.csproj", "{BFE97E64-BF01-48AF-81EE-6B2610076542}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniversalStorage2.Unity", "USSourceDev\UniversalStorage.Unity\UniversalStorage2.Unity.csproj", "{C007D381-0135-43BD-AAC7-95E3D40283F8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{ED3F84F7-C6B2-4F96-9B08-4C79204D36A1}"
+	ProjectSection(SolutionItems) = preProject
+		buildRelease.bat = buildRelease.bat
+		Changelog.txt = Changelog.txt
+		deploy.bat = deploy.bat
+		jenkins.txt = jenkins.txt
+		Licence.docx = Licence.docx
+		Licence.pdf = Licence.pdf
+		README.md = README.md
+		UniversalStorage2.version = UniversalStorage2.version
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BFE97E64-BF01-48AF-81EE-6B2610076542}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFE97E64-BF01-48AF-81EE-6B2610076542}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFE97E64-BF01-48AF-81EE-6B2610076542}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFE97E64-BF01-48AF-81EE-6B2610076542}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C007D381-0135-43BD-AAC7-95E3D40283F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C007D381-0135-43BD-AAC7-95E3D40283F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C007D381-0135-43BD-AAC7-95E3D40283F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C007D381-0135-43BD-AAC7-95E3D40283F8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {93CE142A-97CC-44EF-833A-748A2C2AFD0C}
+	EndGlobalSection
+EndGlobal

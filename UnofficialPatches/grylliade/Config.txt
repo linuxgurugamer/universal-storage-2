@@ -1,0 +1,9 @@
+https://forum.kerbalspaceprogram.com/index.php?/topic/177385-universal-storage-ii-131-and-145-170/&do=findComment&comment=3870793
+
+A couple of errors in config files I’ve noticed (for the 1.9.1 beta, if it makes a difference):
+
+Control/ACDMedium.cfg: missing a closing brace for ModuleTestSubject.
+Electrical/GuidanceComputer.cfg: has a “//-” instead of “/-” on line 147; basically acts like a missing closing brace.
+Lifesupport/WaterWedge.cfg: Two EXTRA closing braces after the TAC Life Support section.
+Processors/WaterPurifier.cfg: Missing closing brace after the USI Life Support section.
+Radials/RadialTanks.cfg: “/0/category” instead of “//category” under Kerbalism section; also, “techRequired” and “cost” aren’t commented out (shouldn’t break anything AFAICT, but should still be fixed). Probably wouldn’t be a bad idea to fix the “VariantColors” to “@VariantColors” in the edits, either.
