@@ -51,6 +51,7 @@
     </Compile>
     <Compile Include="InstallChecker.cs" />
     <Compile Include="Science\USAdvancedScience.cs" />
+    <Compile Include="Science\USScienceContainer.cs" />
     <Compile Include="StockVariants\EditorPartIconListener.cs" />
     <Compile Include="StockVariants\UI_USPartActionVariantButton.cs" />
     <Compile Include="StockVariants\USVariantController.cs" />

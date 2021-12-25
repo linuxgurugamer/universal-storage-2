@@ -1,13 +1,42 @@
 Linuxgurugamer
 	Started with latest beta from Bitbucket
-	Merged in changes from @nicolaSix which fixes the NRE spam in the console when accessing the PAW, in EditorPartIconListener.cs
-	Fixed syntax error in GuidanceComputer.cfg
-	Added NerteaCryo.cfg
-	Fixed syntax error for TAC in ComboLifesupportWedge.cfg
-	Removed extra trailing brace from WaterWedge.cfg
-	Removed extra trailing brace from WaterPurifier.cfg
+	Forum user @nicolaSix found the problem for the NRE spam
+		Merged in changes from @nicolaSix which fixes the NRE spam in the console when accessing the PAW, in EditorPartIconListener.cs
+	Fixed errors reported by forum user @grylliad:
+		Fixed syntax error in GuidanceComputer.cfg
+		Removed extra trailing brace from WaterWedge.cfg
+		Removed extra trailing brace from WaterPurifier.cfg
+	Fixed error reported by forum user @jefferyharrell:
+		Fixed syntax error for TAC in ComboLifesupportWedge.cfg
+	From forum user @Sandriell:
+		Expand fuel options and add support to the fuel tank wedge for LqdHydrogen and LqdMethane added by CryoTanks
+		Added NerteaCryo.cfg
 
 	Added AssemblyVersion.tt
 	Added InstallChecker.cs
 	Deleted unnecessary DLLs
 	Added .gitignore
+	Reorganized directories
+
+	Fixed node sizes for:
+		ACDLarge
+		ACDTiny
+		AdapterShroud0625
+		AdapterShroud1250
+		AdapterShroud1250Soyuz
+		CylindricalShroud0625
+		CylindriclaShrouhd250
+		US_Octo
+
+	Added back current Community Resource Pack
+	Added support for IFI Life Support 
+	Added new module: USScienceContainer
+	Added missing text to localization files for all but en
+	Added new science experiment (needs fleshing out) for mapcam
+	Added Laser Altimeter experiment for MapCam (needs some fleshing out)
+	From forum user @Sandriell:
+		Added Cryo config
+		Added mass rebalance configs as optional patches controlled by Patch Manager
+
+TODO
+	Update all language files for missing fields

@@ -73,7 +73,7 @@ namespace UniversalStorage2
 
         private ExperimentsResultDialog _resultsDialog;
         private PopupDialog _overwriteDialog;
-        
+
         private Animation _deployAnim;
         private Animation[] _sampleAnims;
 
@@ -240,7 +240,7 @@ namespace UniversalStorage2
                     _greebleTransform.gameObject.SetActive(false);
             }
         }
-        
+
         public override void OnUpdate()
         {
             base.OnUpdate();
@@ -365,7 +365,7 @@ namespace UniversalStorage2
                 }
             }
         }
-        
+
         [KSPEvent(guiActive = true, guiName = "Deploy", active = true)]
         private void ToggleEvent()
         {
@@ -409,7 +409,7 @@ namespace UniversalStorage2
                     }
                 }
 
-                IsDeployed = false;             
+                IsDeployed = false;
             }
             else
             {
@@ -450,14 +450,14 @@ namespace UniversalStorage2
                     }
                 }
 
-                IsDeployed = true;           
+                IsDeployed = true;
             }
         }
 
         private IEnumerator WaitForSampleStow()
         {
             float time = 0;
-            
+
             for (int i = experimentsNumber - 1; i >= 0; i--)
             {
                 if (_sampleAnims.Length <= i)
@@ -473,7 +473,7 @@ namespace UniversalStorage2
             }
 
             yield return new WaitForSeconds(time);
-            
+
             Animate(-1 * animSpeed, 1, WrapMode.Default, deployAnimationName, _deployAnim);
 
             yield return new WaitForSeconds(_deployAnim[deployAnimationName].length);
@@ -487,7 +487,7 @@ namespace UniversalStorage2
         private IEnumerator WaitForDoorOpen()
         {
             yield return new WaitForSeconds(_deployAnim[deployAnimationName].length);
-            
+
             for (int i = experimentsNumber - 1; i >= 0; i--)
             {
                 if (_sampleAnims.Length <= i)
@@ -512,7 +512,7 @@ namespace UniversalStorage2
                 ToggleEvent();
         }
 
-        [KSPEvent(active = true, guiActive = false, guiActiveUnfocused = false, guiActiveUncommand = false, guiActiveEditor = true, guiName = "Toggle Greebles" )]
+        [KSPEvent(active = true, guiActive = false, guiActiveUnfocused = false, guiActiveUncommand = false, guiActiveEditor = true, guiName = "Toggle Greebles")]
         private void ToggleGreebles()
         {
             if (greeblesActive)
@@ -582,7 +582,7 @@ namespace UniversalStorage2
         {
             ResetExperiment();
         }
-        
+
         new public void CollectDataExternalEvent()
         {
             List<ModuleScienceContainer> EVACont = FlightGlobals.ActiveVessel.FindPartModulesImplementing<ModuleScienceContainer>();
@@ -601,7 +601,7 @@ namespace UniversalStorage2
         {
             if (!FlightGlobals.ActiveVessel.isEVA)
                 return;
-            
+
             if (!FlightGlobals.ActiveVessel.parts[0].protoModuleCrew[0].HasEffect<ScienceResetSkill>())
             {
                 ScreenMessages.PostScreenMessage(Localizer.Format("#autoLOC_238776", part.partInfo.title), 5f, ScreenMessageStyle.UPPER_LEFT);
@@ -1011,7 +1011,7 @@ namespace UniversalStorage2
                 Deployed = true;
             else
                 Deployed = experimentsNumber >= experimentsLimit;
-            
+
             if (useSampleTransforms)
             {
                 int i = experimentsReturned;
@@ -1023,7 +1023,7 @@ namespace UniversalStorage2
                     if (g != null)
                         g.SetActive(true);
                 }
-            }            
+            }
         }
 
         new private bool IsRerunnable()
@@ -1042,7 +1042,7 @@ namespace UniversalStorage2
                 Inoperable = !IsRerunnable();
                 Deployed = Inoperable;
                 _storedScienceReportList.Remove(data);
-                
+
                 if (useSampleTransforms)
                 {
                     int i = experimentsReturned - 1;
@@ -1070,7 +1070,7 @@ namespace UniversalStorage2
                 Inoperable = !IsRerunnable();
                 Deployed = Inoperable;
                 _initialDataList.Remove(data);
-                
+
                 if (useSampleTransforms)
                 {
                     int i = experimentsReturned - 1;
@@ -1094,7 +1094,7 @@ namespace UniversalStorage2
             Inoperable = !IsRerunnable();
             Deployed = Inoperable;
             data.Clear();
-            
+
             if (useSampleTransforms)
             {
                 for (int i = 1; i <= data.Count; i++)

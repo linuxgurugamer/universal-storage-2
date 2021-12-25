@@ -1,0 +1,7 @@
+Fix description of the MapCamWedge
+Fix functionality of MapCam Wedge
+	So if Greebles are off, CaseOpen should not be visible - DONE - need to test on other shrouds
+	LensExtend needs to be on in order to run the experiment
+	Film Release should not  be available if Greebles are on and CaseOpen is not open
+	Limit camera science experiments to a finite number
+	New science experiment called Laser Altimeter, only to be used while flying or in space (max altitude to be determined)
