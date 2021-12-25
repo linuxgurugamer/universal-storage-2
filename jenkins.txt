@@ -31,7 +31,8 @@
 1:UniversalStorage2, UniversalStorage2.version, universal-storage-2
 
 # 2:PROJNAME, PROJFILE, VERSIONFILE, PLUGINSFOLDER
-2:UniversalStorage2,Development_Version/UniversalStorage2.csproj,UniversalStorage2.version,GameData/UniversalStorage2/Plugins
+2:UniversalStorage2,USSourceDev/UniversalStorage/UniversalStorage2.csproj,UniversalStorage2.version,GameData/UniversalStorage2/Plugins
+2:UniversalStorage2,USSourceDev/\UniversalStorage.Unity/UniversalStorage2.Unity.csproj,UniversalStorage2.version,GameData/UniversalStorage2/Plugins
 
 # 3:SOURCEFILE, DESTDIR
 3:UniversalStorage2.version,GameData/UniversalStorage2
