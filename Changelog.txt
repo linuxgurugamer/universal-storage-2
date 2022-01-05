@@ -1,4 +1,5 @@
-Linuxgurugamer
+4.0.0
+	Adoption by Linuxgurugamer
 	Started with latest beta from Bitbucket
 	Forum user @nicolaSix found the problem for the NRE spam
 		Merged in changes from @nicolaSix which fixes the NRE spam in the console when accessing the PAW, in EditorPartIconListener.cs
@@ -37,6 +38,20 @@ Linuxgurugamer
 	From forum user @Sandriell:
 		Added Cryo config
 		Added mass rebalance configs as optional patches controlled by Patch Manager
+
+4.0.0.1 
+	Added :LAST to the NerteaCryoMassRebalance.cfg
+	Changed :FINAL to LAST[UniversalStorage2] in the MassResourceRebalance.cfg
+	Fixed GuidanceComputer to only be available when kOs is installed
+	Added resize patch to reduce size of parts very slightly by about 2.25%, to better fix stock parts
+	Changed MassResourceRebalance.cfg to change FINAL to LAST[UniversalStorage2]
+	Following changes/additions to support IFILS, currently under development:
+		Fixed OxygenWedge for IFILS, to only hold liquid O2
+		Updated ComboLivesupportWedge to support IFILS
+		Updated FoodWedge with correct names for IFILS
+		Updated Elektron to not be available when IFILS is installed
+	Updated version file
+
 
 TODO
 	Update all language files for missing fields
