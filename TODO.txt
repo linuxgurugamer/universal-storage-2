@@ -5,3 +5,31 @@ Fix functionality of MapCam Wedge
 	Film Release should not  be available if Greebles are on and CaseOpen is not open
 	Limit camera science experiments to a finite number
 	New science experiment called Laser Altimeter, only to be used while flying or in space (max altitude to be determined)
+	Does the Data storage wedge open\animate? I couldnt seem to get it to work myself
+
+Functionality of Subsats
+------------------------
+
+Both Subsats are kind of a combination of a Probe Core and a Decoupler. They eject themselves from their attachment node after playing their Greeble "deployment" animations (LSubsatBayDeploy for adv, DoorDeploy for basic), with a timed delay so they don't launch through the doors before they open completely. This delay is used in the Attitude Control Decoupler deployment arms in the 2.5m and 1.875m models, for reference. I had a basic example working but I've long since lost that .cfg file. 
+
+This ejection should leave their Greeble bays 'stuck' in the US2 bays until they vanish on next craft reload, like the debris from a stack decoupler, or a large radial decoupler. 
+
+After ejecting\deploying, the subsats proper would normally auto assign as craft debris, but if they could be coded to become probes that acted as controllable ships, that would be ideal. 
+
+The basic subsat (as a sputnik analogue) isn't meant to last very long, as it doesn't have solar - the internal battery would probably only be good for a week of in-game time or something. The probe core module it would need would have to be quite simple (no reaction wheels?) and low-drain. Might also have to code its science experiment to not be too draining while transmitting. The point of this Subsat was to give the player a crude early game science wedge, akin to the first satellites that orbited earth. I felt the Russian-esque parts i made were quite limited based on the lack of entry-level wedges alongside their place in the tech tree. 
+
+The advanced subsat is a different story, there are solar panels, internal tanks, space to mount an ant or monoprop engine, gyros, and a more advanced antenna to reach back to earth from lunar orbit. It is an analogue of the Apollo 15 lunar subsatellite, and was modelled to look a bit like it. It has four unique experiments as follows... 
+
+    Solar particle collector (top),
+    Magnometer (boom arm), 
+    Some kind of camera (top lens), 
+    Alternative boom arm (antenna, counterweight, signal detector, etc). 
+
+The animation "LSubsatBodyDoorDeploy" alludes to radiator deployment on the panel doors, heating was never really implemented but if you want to tackle that, no worries. Could just leave it in as a EVA activity for roleplayers, inspecting their craft. 
+
+Solar modules on either side have sunCatchers to plug into a solar plugin, like the shrouds do. These are fixed and don't track.
+
+It'll need to be defined with internal fuel, not sure if you want it to be a switchable optional toggle, for mono or conventional fuel, or include realfuels support, etc. 
+
+All animations have been added in the cfg as user controllable, so they're available for integration with the actual experiments later on.
+	
