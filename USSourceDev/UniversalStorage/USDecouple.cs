@@ -1,6 +1,7 @@
 ﻿
 using System.Collections;
 using UnityEngine;
+using KSP.Localization;
 
 namespace UniversalStorage2
 {
@@ -14,12 +15,17 @@ namespace UniversalStorage2
         public bool DecoupleEVA = true;
         [KSPField]
         public float AnimationSpeed = 1;
+        [KSPField]
+        public bool debrisAfterDecouple = true;
+        [KSPField]
+        public string nameSuffix = "";
+
 
         private BaseEvent decoupleEvent;
         private BaseAction decoupleAction;
-        
+
         private Animation[] _decoupleAnimation;
-        
+
         public override void OnAwake()
         {
             base.OnAwake();
@@ -47,7 +53,7 @@ namespace UniversalStorage2
             if (!string.IsNullOrEmpty(DecoupleAnimationName))
                 _decoupleAnimation = part.FindModelAnimators(DecoupleAnimationName);
         }
-        
+
         public override void OnActive()
         {
             if (staged)
@@ -92,7 +98,57 @@ namespace UniversalStorage2
             if (time > 0)
                 yield return new WaitForSeconds(time);
 
+#if true 
+            var mj = this.part.FindModuleImplementing<ModuleJettison>();
+            if (mj)
+            {
+                mj.decoupleEnabled = true;
+                Transform transform = base.part.FindModelTransform(name);
+                if (transform != null && transform.gameObject.activeSelf)
+                {
+                    mj.activejettisonName = name;
+                    mj.jettisonTransform = transform;
+                }
+
+                AttachNode attachNode = base.part.FindAttachNode(mj.bottomNodeName);
+                if (attachNode != null)
+                {
+                    mj.jettisonTransform.parent = attachNode.attachedPart.gameObject.transform;
+                    Debug.Log("USDecouple, mj.jettisonTransform.parent is set");
+                }
+                mj.Jettison();
+            }
+#endif
             OnDecouple();
+            Debug.Log("USDecouple, after OnDecouple");
+
+            if (!debrisAfterDecouple)
+            {
+                this.vessel.vesselType = VesselType.Probe;
+                string str = this.vessel.vesselName;
+                int idx1 = str.LastIndexOf("Debris");
+                if (idx1 < 0)
+                {
+                    int idx2 = str.LastIndexOf(Localizer.Format("#autoLOC_900676"));
+                    if (idx2 < 0)
+                    {
+                        int idx3 = str.LastIndexOf(Localizer.Format("#autoLOC_6100044"));
+                        if (idx3 >= 0)
+                        {
+                            str = str.Substring(0, idx3) + " " + nameSuffix;
+                        }
+                    }
+                    else
+                    {
+                        str = str.Substring(0, idx2) + " " + nameSuffix;
+                    }
+                }
+                else
+                {
+                    str = str.Substring(0, idx1) + " " + nameSuffix;
+                }
+            }
+
         }
 
         private void Animate(Animation anim, float speed)

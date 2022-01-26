@@ -32,6 +32,9 @@ namespace UniversalStorage2
         public bool IsActive = false;
         [KSPField(isPersistant = true)]
         public bool IsDeployed = false;
+        [KSPField(isPersistant = true)]
+        public bool IsFixed = false;
+
         [KSPField]
         public bool DebugMode = false;
         [KSPField]
@@ -87,7 +90,7 @@ namespace UniversalStorage2
             IsDeployed = isOn;
 
             if (HighLogic.LoadedSceneIsFlight)
-                SolarPanels = IsDeployed ? "" : _localizedRetractedString;
+                SolarPanels = (IsDeployed || IsFixed)? "" : _localizedRetractedString;
         }
 
         public override void OnStart(StartState state)
@@ -139,7 +142,7 @@ namespace UniversalStorage2
             if (HighLogic.LoadedSceneIsEditor)
                 SolarPanels = IsActive ? _localizedActiveString : _localizedInactiveString;
             else
-                SolarPanels = IsDeployed ? "" : _localizedRetractedString;
+                SolarPanels = (IsDeployed || IsFixed)? "" : _localizedRetractedString;
         }
 
         public override void OnStartFinished(StartState state)
@@ -244,7 +247,7 @@ namespace UniversalStorage2
             if (!IsActive)
                 return;
 
-            if (!IsDeployed)
+            if (!IsDeployed && !IsFixed)
                 return;
 
             if (!HighLogic.LoadedSceneIsFlight)

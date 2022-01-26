@@ -1,13 +1,13 @@
 {
   "NAME": "Universal Storage 2",
-  "URL": "http://ksp-avc.cybutek.net/version.php?id=667",
-  "DOWNLOAD": "https://spacedock.info/mod/1933/Universal%20Storage%20II",
-  "CHANGE_LOG_URL": "https://spacedock.info/mod/1933/Universal%20Storage%20II",
+  "URL": "http://ksp.spacetux.net/avc/UniversalStorage2",
+  "DOWNLOAD": "https://github.com/linuxgurugamer/universal-storage-2/releases",
+  "CHANGE_LOG_URL": "https://raw.githubusercontent.com/linuxgurugamer/universal-storage-2/master/Changelog.txt",
   "VERSION": {
-    "MAJOR": 1,
-    "MINOR": 9,
-    "PATCH": 2,
-    "BUILD": 0
+    "MAJOR": 4,
+    "MINOR": 0,
+    "PATCH": 0,
+    "BUILD": 1
   },
   "KSP_VERSION": {
     "MAJOR": 1,
