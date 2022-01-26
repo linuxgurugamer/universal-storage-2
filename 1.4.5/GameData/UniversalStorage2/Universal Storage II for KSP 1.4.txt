@@ -1,1 +1,0 @@
-This version of the Mod will only work with KSP 1.4.0 or later.  Please download the correct vertion for your install.

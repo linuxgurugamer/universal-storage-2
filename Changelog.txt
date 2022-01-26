@@ -52,6 +52,21 @@
 		Updated Elektron to not be available when IFILS is installed
 	Updated version file
 
+4.0.0.2
+	Fixed bulkheadProfiles for many parts
+	Added three new parts:
+		Basic Sub-satellite
+			Contains two small science experiments, temperature and pressure
+		Advanced Sub-Satellite
+			Contains the following experiments
+				Magnometer
+				Camera, for low altitude photos
+				Solar panels, fixed
+				Radiators, deployable
+				Xenon gas tank
+			Antenna, deployable
+		Micro-Dawn Electric Drive
+			Designed to attach to the bottom of the Advanced Sub-Satellite.  Combined with the satellite, it has a bit more than 700 dV available
 
 TODO
 	Update all language files for missing fields
