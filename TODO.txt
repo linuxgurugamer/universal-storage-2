@@ -18,23 +18,12 @@ After ejecting\deploying, the subsats proper would normally auto assign as craft
 
 The basic subsat (as a sputnik analogue) isn't meant to last very long, as it doesn't have solar - the internal battery would probably only be good for a week of in-game time or something. The probe core module it would need would have to be quite simple (no reaction wheels?) and low-drain. Might also have to code its science experiment to not be too draining while transmitting. The point of this Subsat was to give the player a crude early game science wedge, akin to the first satellites that orbited earth. I felt the Russian-esque parts i made were quite limited based on the lack of entry-level wedges alongside their place in the tech tree. 
 
-The advanced subsat is a different story, there are solar panels, internal tanks, space to mount an ant or monoprop engine, gyros, and a more advanced antenna to reach back to earth from lunar orbit. It is an analogue of the Apollo 15 lunar subsatellite, and was modelled to look a bit like it. 
-	solar panels
-	internal tanks
-	gyros
-	antenna
+The advanced subsat is a different story, there are solar panels, internal tanks, space to mount an ant or monoprop engine, gyros, and a more advanced antenna to reach back to earth from lunar orbit. It is an analogue of the Apollo 15 lunar subsatellite, and was modelled to look a bit like it. It has four unique experiments as follows... 
 
-	Satellite deploy				LSubsatBayDeploy
-
-It has four unique experiments as follows... 
-
-    Solar particle collector (top),		
-    Magnometer (boom arm), 				LSubsatMag
-    Some kind of camera (top lens), 	LSubsatSolarLens
-    Alternative boom arm (antenna, counterweight, signal detector, etc). 	LSubsatAntenna
-
-
-LSubsatBodyDoorDeploy
+    Solar particle collector (top),
+    Magnometer (boom arm), 
+    Some kind of camera (top lens), 
+    Alternative boom arm (antenna, counterweight, signal detector, etc). 
 
 The animation "LSubsatBodyDoorDeploy" alludes to radiator deployment on the panel doors, heating was never really implemented but if you want to tackle that, no worries. Could just leave it in as a EVA activity for roleplayers, inspecting their craft. 
 
@@ -44,4 +33,3 @@ It'll need to be defined with internal fuel, not sure if you want it to be a swi
 
 All animations have been added in the cfg as user controllable, so they're available for integration with the actual experiments later on.
 	
-

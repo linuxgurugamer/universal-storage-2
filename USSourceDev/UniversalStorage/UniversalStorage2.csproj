@@ -62,7 +62,6 @@
     <Compile Include="SwitchModules\USRadiatorSwitch.cs" />
     <Compile Include="SwitchModules\USSolarSwitch.cs" />
     <Compile Include="Science\USSimpleScience.cs" />
-    <Compile Include="USModuleJettison.cs" />
     <Compile Include="Utilities\USdebugMessages.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="USAnimateGeneric.cs" />
