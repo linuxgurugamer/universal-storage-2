@@ -68,5 +68,11 @@
 		Micro-Dawn Electric Drive
 			Designed to attach to the bottom of the Advanced Sub-Satellite.  Combined with the satellite, it has a bit more than 700 dV available
 
+
+4.0.0.3 
+	Adjusted packetInterval, packetSize & packetResourceCost for the data transmitters in the two microsatellites
+	Fixed the names in the advanced science microsat for the experiments
+
+
 TODO
 	Update all language files for missing fields
