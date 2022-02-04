@@ -77,5 +77,9 @@
 	Fixed Microdawn not showing up when Restock is installed
 	Fixed microsats generating nullrefs when retracting antenna in editor
 
+4.0.0.5
+	Fixed microsats generating more nullrefs
+	Made all microsat animations available in the editor
+
 TODO
 	Update all language files for missing fields

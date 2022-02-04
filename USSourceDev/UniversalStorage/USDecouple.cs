@@ -98,7 +98,6 @@ namespace UniversalStorage2
             if (time > 0)
                 yield return new WaitForSeconds(time);
 
-#if true 
             var mj = this.part.FindModuleImplementing<ModuleJettison>();
             if (mj)
             {
@@ -114,13 +113,10 @@ namespace UniversalStorage2
                 if (attachNode != null)
                 {
                     mj.jettisonTransform.parent = attachNode.attachedPart.gameObject.transform;
-                    Debug.Log("USDecouple, mj.jettisonTransform.parent is set");
                 }
                 mj.Jettison();
             }
-#endif
             OnDecouple();
-            Debug.Log("USDecouple, after OnDecouple");
 
             if (!debrisAfterDecouple)
             {
