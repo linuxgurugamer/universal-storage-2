@@ -10,11 +10,11 @@ namespace UniversalStorage2
         [KSPField]
         public string deployAnimationName = null;
         [KSPField]
-        public string endEventGUIName = "Retract";
+        public string endEventGUIName = "#autoLOC_7003224"; // Retract
         [KSPField]
-        public string startEventGUIName = "Deploy";
+        public string startEventGUIName = "#autoLOC_502050"; // Deploy
         [KSPField]
-        public string toggleEventGUIName = "Toggle";
+        public string toggleEventGUIName = "#autoLOC_502068"; // Toggle
         [KSPField]
         public bool deployAvailableInEVA = true;
         [KSPField]
@@ -147,7 +147,7 @@ namespace UniversalStorage2
             }
         }
 
-        [KSPEvent(guiActive = true, guiName = "Deploy", active = true)]
+        [KSPEvent(guiActive = true, guiName = "#autoLOC_502050" /* Deploy */, active = true)]
         private void ToggleEvent()
         {
             if (IsDeployed)
@@ -177,7 +177,7 @@ namespace UniversalStorage2
             }
         }
 
-        [KSPAction("Toggle")]
+        [KSPAction("autoLOC_502068")] // "Toggle"
         private void ToggleAction(KSPActionParam param)
         {
             if (deployAvailableInVessel)
