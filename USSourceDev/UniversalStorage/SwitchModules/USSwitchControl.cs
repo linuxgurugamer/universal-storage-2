@@ -32,9 +32,9 @@ namespace UniversalStorage2
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
         [KSPField]
-        public string CurrentVariantTitle = "Current Variant";
+        public string CurrentVariantTitle = "#autoLOC_US_CurrentVariant";
         [KSPField]
-        public string ModuleDisplayName = "Switch Control";
+        public string ModuleDisplayName = "#autoLOC_US_SwitchControl";
 
         [KSPField, UI_USVariantSelector(affectSymCounterparts = UI_Scene.Editor, controlEnabled = true, scene = UI_Scene.Editor)]
         private int VariantSelection = 0;
@@ -288,7 +288,7 @@ namespace UniversalStorage2
             GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
         }
 
-        [KSPEvent(name = "RenderDragCube", guiName = "Render Drag Cube", active = false, guiActive = true, guiActiveEditor = true)]
+        [KSPEvent(name = "RenderDragCube", guiName = "#autoLOC_US_RenderDragCube", active = false, guiActive = true, guiActiveEditor = true)]
         public void RenderDragCube()
         {
             DragCube cube = DragCubeSystem.Instance.RenderProceduralDragCube(part);

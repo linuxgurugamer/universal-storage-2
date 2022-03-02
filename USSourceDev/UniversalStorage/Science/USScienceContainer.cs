@@ -13,9 +13,9 @@ namespace UniversalStorage2
         [KSPField]
         public string paperfeedAnimationName = null;
         [KSPField]
-        public string startEventGUIName = "Deploy";
+        public string startEventGUIName = "#autoLOC_502050"; // Deploy
         [KSPField]
-        public string endEventGUIName = "Retract";
+        public string endEventGUIName = "#autoLOC_7003224"; // Retract
         [KSPField]
         public bool deployAvailableInEVA = true;
         [KSPField]

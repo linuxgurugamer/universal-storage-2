@@ -67,7 +67,7 @@ namespace UniversalStorage2
             }
         }
 
-        [KSPEvent(guiName = "Jettison Doors", guiActive = false, guiActiveUnfocused = false, guiActiveEditor = false)]
+        [KSPEvent(guiName = "#autoLOC_US_JettisonDoors", guiActive = false, guiActiveUnfocused = false, guiActiveEditor = false)]
         public void OnJettison()
         {
             if (_jettisonModule == null)

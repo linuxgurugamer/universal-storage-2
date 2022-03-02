@@ -5,11 +5,11 @@ namespace UniversalStorage2
 {
     public class USReactionWheel : PartModule
     {
-        [KSPField(guiName = "Max Rotation", isPersistant = true, guiActive = true, guiFormat = "N2"), UI_FloatRange(minValue = 0f, maxValue = 1f, stepIncrement = 0.01f, scene = UI_Scene.All, affectSymCounterparts = UI_Scene.All)]
+        [KSPField(guiName = "#autoLOC_US_MaxRotation", isPersistant = true, guiActive = true, guiFormat = "N2"), UI_FloatRange(minValue = 0f, maxValue = 1f, stepIncrement = 0.01f, scene = UI_Scene.All, affectSymCounterparts = UI_Scene.All)]
         public float MaxRotation = 5;
-        [KSPField(guiName = "Wheel Speed", isPersistant = true, guiActive = true, guiFormat = "0"), UI_FloatRange(minValue = 0f, maxValue = 50f, stepIncrement = 0.1f, scene = UI_Scene.All, affectSymCounterparts = UI_Scene.All)]
+        [KSPField(guiName = "#autoLOC_US_WheelSpeed", isPersistant = true, guiActive = true, guiFormat = "0"), UI_FloatRange(minValue = 0f, maxValue = 50f, stepIncrement = 0.1f, scene = UI_Scene.All, affectSymCounterparts = UI_Scene.All)]
         public float WheelSpeed = 10;
-        [KSPField(guiName = "Wheel Acceleration", isPersistant = true, guiActive = true, guiFormat = "N1"), UI_FloatRange(minValue = 0f, maxValue = 10f, stepIncrement = 0.1f, scene = UI_Scene.All, affectSymCounterparts = UI_Scene.All)]
+        [KSPField(guiName = "#autoLOC_US_WheelAcceleration", isPersistant = true, guiActive = true, guiFormat = "N1"), UI_FloatRange(minValue = 0f, maxValue = 10f, stepIncrement = 0.1f, scene = UI_Scene.All, affectSymCounterparts = UI_Scene.All)]
         public float WheelAcceleration = 1;
         [KSPField]
         public string WheelTransformName;

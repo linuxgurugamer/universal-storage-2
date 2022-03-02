@@ -12,7 +12,7 @@ namespace UniversalStorage2
         [KSPField]
         public bool DisplayCurrentModeCost = false;
         [KSPField]
-        public string DisplayCostName = "Part Cost";
+        public string DisplayCostName = "#autoLOC_US_PartCost";
         [KSPField(guiActive = false, guiActiveEditor = false, guiName = "Part Cost")]
         public float AddedCostValue = 0f;
         [KSPField(isPersistant = true)]

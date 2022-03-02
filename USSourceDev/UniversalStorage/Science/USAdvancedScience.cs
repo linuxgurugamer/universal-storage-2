@@ -16,11 +16,11 @@ namespace UniversalStorage2
         [KSPField]
         public string sampleAnimationName = null;
         [KSPField]
-        public string endEventGUIName = "Retract";
+        public string endEventGUIName = "#autoLOC_7003224"; // Retract
         [KSPField]
-        public string startEventGUIName = "Deploy";
+        public string startEventGUIName = "#autoLOC_502050"; // Deploy
         [KSPField]
-        public string toggleEventGUIName = "Toggle";
+        public string toggleEventGUIName = "#autoLOC_502068"; // Toggle
         [KSPField]
         public bool deployAvailableInEVA = true;
         [KSPField]
@@ -38,13 +38,13 @@ namespace UniversalStorage2
         [KSPField]
         public string greebleTransform = string.Empty;
         [KSPField]
-        public string greebleToggleName = "Toggle Greebles";
+        public string greebleToggleName = "#autoLOC_US_ToggleGreebles";
 
 
         [KSPField]
-        public string deploySampleGUIName = "Deploy Samples";
+        public string deploySampleGUIName = "#autoLOC_US_DeploySamples";
         [KSPField]
-        public string stowSampleGUIName = "Stow Samples";
+        public string stowSampleGUIName = "#autoLOC_US_StowSamples";
 
         [KSPField]
         public int experimentsLimit = 1;
@@ -59,11 +59,11 @@ namespace UniversalStorage2
         [KSPField]
         public string sampleTransformName = "";
         [KSPField]
-        public string inoperableMessage = "<color=orange>[<<1>>]: Cannot run experiment; science module inoperable</color>";
+        public string inoperableMessage = "#autoLOC_US_SciInoperable"; // "<color=orange>[<<1>>]: Cannot run experiment; science module inoperable</color>";
         [KSPField]
-        public string storageFullMessage = "<color=orange>[<<1>>]: Cannot run experiment; science module full</color>";
+        public string storageFullMessage = "#autoLOC_US_SciStorageFull"; // "< color=orange>[<<1>>]: Cannot run experiment; science module full</color>";
         [KSPField]
-        public string concurrentFullMessage = "Can only store <<1>> sample";
+        public string concurrentFullMessage = "#autoLOC_US_SciConcurrentFull"; // "Can only store <<1>> sample";
 
         private Dictionary<int, GameObject> _sampleTransforms = new Dictionary<int, GameObject>();
 
@@ -366,7 +366,7 @@ namespace UniversalStorage2
             }
         }
 
-        [KSPEvent(guiActive = true, guiName = "Deploy", active = true)]
+        [KSPEvent(guiActive = true, guiName = "#autoLOC_502050" /* Deploy */, active = true)]
         private void ToggleEvent()
         {
             if (IsDeployed)
@@ -505,14 +505,14 @@ namespace UniversalStorage2
             _waitForDoors = null;
         }
 
-        [KSPAction("Toggle")]
+        [KSPAction("#autoLOC_502068")] // "Toggle"
         private void ToggleAction(KSPActionParam param)
         {
             if (deployAvailableInVessel)
                 ToggleEvent();
         }
 
-        [KSPEvent(active = true, guiActive = false, guiActiveUnfocused = false, guiActiveUncommand = false, guiActiveEditor = true, guiName = "Toggle Greebles")]
+        [KSPEvent(active = true, guiActive = false, guiActiveUnfocused = false, guiActiveUncommand = false, guiActiveEditor = true, guiName = "#autoLOC_US_ToggleGreebles")]
         private void ToggleGreebles()
         {
             if (greeblesActive)
@@ -1137,7 +1137,7 @@ namespace UniversalStorage2
             ReviewData();
         }
 
-        [KSPEvent(guiActive = true, guiName = "Review Initial Data", active = false)]
+        [KSPEvent(guiActive = true, guiName = "#autoLOC_US_ReviewInitialData", active = false)]
         public void ReviewInitialData()
         {
             if (_initialDataList.Count > 0)

@@ -14,7 +14,7 @@ namespace UniversalStorage2
         [KSPField]
         public bool AllowGreebleToggle = true;
         [KSPField]
-        public string GreebleToggleName = "Toggle Details";
+        public string GreebleToggleName = "#autoLOC_US_ToggleDetails";
         [KSPField]
         public string GreebleTransform = "";
         [KSPField(isPersistant = true)]
@@ -101,7 +101,7 @@ namespace UniversalStorage2
             
         }
 
-        [KSPEvent(name = "ToggleGreeble", guiName = "Toggle Details", guiActive = false, guiActiveUnfocused = false, guiActiveEditor = true, active = true)]
+        [KSPEvent(name = "ToggleGreeble", guiName = "#autoLOC_US_ToggleDetails", guiActive = false, guiActiveUnfocused = false, guiActiveEditor = true, active = true)]
         public void ToggleGreeble()
         {
             IsActive = !IsActive;
