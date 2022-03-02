@@ -11,8 +11,8 @@ namespace UniversalStorage2
         [KSPField]
         public bool DisplayCurrentModeMass = false;
         [KSPField]
-        public string DisplayMassName = "Part Mass";
-        [KSPField(guiActive = false, guiActiveEditor = true, guiName = "Part Mass")]
+        public string DisplayMassName = "#autoLOC_US_PartMass"; // Part Mass
+        [KSPField(guiActive = false, guiActiveEditor = true, guiName = "#autoLOC_US_PartMass")]
         public float DryMassInfo = 0f;
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;

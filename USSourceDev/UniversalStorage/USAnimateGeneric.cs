@@ -16,31 +16,31 @@ namespace UniversalStorage2
 		[KSPField]
 		public string secondaryAnimationName;
 		[KSPField]
-		public string primaryStartEventGUIName = "Deploy Primary Bays";
+		public string primaryStartEventGUIName = "#autoLOC_US_DeployPrimaryBays";
 		[KSPField]
-		public string primaryEndEventGUIName = "Retract Primary Bays";
+		public string primaryEndEventGUIName = "#autoLOC_US_RetractPrimaryBays";
 		[KSPField]
-		public string primaryToggleActionName = "Toggle Primary Bays";
+		public string primaryToggleActionName = "#autoLOC_US_TogglePrimaryBays";
         [KSPField]
-        public string lockPrimaryDoorName = "Lock Primary Bays";
+        public string lockPrimaryDoorName = "#autoLOC_US_LockPrimaryBays";
         [KSPField]
-        public string unlockPrimaryDoorName = "Unlock Primary Bays";
+        public string unlockPrimaryDoorName = "#autoLOC_US_UnlockPrimaryBays";
         [KSPField]
-		public string secondaryStartEventGUIName = "Deploy Secondary Bays";
+		public string secondaryStartEventGUIName = "#autoLOC_US_DeploySecondaryBays";
 		[KSPField]
-		public string secondaryEndEventGUIName = "Retract Secondary Bays";
+		public string secondaryEndEventGUIName = "#autoLOC_US_RetractSecondaryBays";
 		[KSPField]
-		public string secondaryToggleActionName = "Toggle Secondary Bays";
+		public string secondaryToggleActionName = "#autoLOC_US_ToggleSecondaryBays";
         [KSPField]
-        public string lockSecondaryDoorName = "Lock Secondary Bays";
+        public string lockSecondaryDoorName = "#autoLOC_US_LockSecondaryBays";
         [KSPField]
-        public string unlockSecondaryDoorName = "Unlock Secondary Bays";
+        public string unlockSecondaryDoorName = "#autoLOC_US_UnlockSecondaryBays";
         [KSPField]
-		public string combinedStartEventGUIName = "Deploy All Bays";
+		public string combinedStartEventGUIName = "#autoLOC_US_DeployAllBays";
 		[KSPField]
-		public string combinedEndEventGUIName = "Retract All Bays";
+		public string combinedEndEventGUIName = "#autoLOC_US_RetractAllBays";
 		[KSPField]
-		public string combinedToggleActionName = "Toggle All Bays";
+		public string combinedToggleActionName = "#autoLOC_US_ToggleAllBays";
         [KSPField(isPersistant = true)]
 		public bool primaryDeployed = false;
 		[KSPField(isPersistant = true)]
@@ -50,7 +50,7 @@ namespace UniversalStorage2
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true), UI_FloatRange(minValue = 0, maxValue = 100, stepIncrement = 1)]
         public float primaryDeployLimit = 100;
         [KSPField]
-        public string primaryDeployLimitName = "Primary Bay Deploy Limit";
+        public string primaryDeployLimitName = "#autoLOC_US_PrimaryBayDeployLimit";
         [KSPField]
         public bool allowPrimaryDeployLimit = true;
         [KSPField]
@@ -58,7 +58,7 @@ namespace UniversalStorage2
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true), UI_FloatRange(minValue = 0, maxValue = 100, stepIncrement = 1)]
         public float secondaryDeployLimit = 100;
         [KSPField]
-        public string secondaryDeployLimitName = "Secondary Bay Deploy Limit";
+        public string secondaryDeployLimitName = "#autoLOC_US_SecondaryBayDeployLimit";
         [KSPField]
         public bool allowSecondaryDeployLimit = true;
         [KSPField]
@@ -423,7 +423,7 @@ namespace UniversalStorage2
                 tglEventPrimary.guiActiveEditor = false;
                 tglEventPrimary.guiActiveUnfocused = false;
                 tglEventPrimary.active = false;
-                tglActionPrimary.guiName = "Toggle Secondary (Disabled)";
+                tglActionPrimary.guiName = Localizer.Format("#autoLOC_US_TogglePrimaryDisabled"); // "Toggle Secondary (Disabled)";
                 tglActionPrimary.active = false;
                 lockEventPrimary.active = false;
             }
@@ -487,7 +487,7 @@ namespace UniversalStorage2
                 tglEventSecondary.guiActiveEditor = false;
                 tglEventSecondary.guiActiveUnfocused = false;
                 tglEventSecondary.active = false;
-                tglActionSecondary.guiName = "Toggle Secondary (Disabled)";
+                tglActionSecondary.guiName = Localizer.Format("#autoLOC_US_ToggleSecondaryDisabled"); // "Toggle Secondary (Disabled)";
                 tglActionSecondary.active = false;
                 lockEventSecondary.active = false;
             }
@@ -1044,13 +1044,13 @@ namespace UniversalStorage2
                 DrawCollisionLines(_SecondaryObstructionSources, _secondaryObstructionLength, Color.red);
         }
         
-        [KSPAction("Jettison Doors")]
+        [KSPAction("#autoLOC_US_JettisonDoors")]
         public void jettisonAction(KSPActionParam param)
         {
             jettisonEvent();
         }
 
-        [KSPEvent(name = "jettisonEvent", guiName = "Jettison Doors", guiActive = false, guiActiveUnfocused = false, unfocusedRange = 5f, guiActiveEditor = false)]
+        [KSPEvent(name = "jettisonEvent", guiName = "#autoLOC_US_JettisonDoors", guiActive = false, guiActiveUnfocused = false, unfocusedRange = 5f, guiActiveEditor = false)]
         public void jettisonEvent()
         {
             for (int i = jettisonModules.Length - 1; i >= 0; i--)
@@ -1062,7 +1062,7 @@ namespace UniversalStorage2
             jettAction.active = false;
         }
 
-        [KSPEvent(name = "lockPrimaryDoorsEvent", guiName = "Lock Primary Bays", guiActive = false, guiActiveUnfocused = false, guiActiveEditor = true, active = false)]
+        [KSPEvent(name = "lockPrimaryDoorsEvent", guiName = "#autoLOC_US_LockPrimaryBays", guiActive = false, guiActiveUnfocused = false, guiActiveEditor = true, active = false)]
         public void lockPrimaryDoorsEvent()
         {
             if (!allowDoorLock)
@@ -1083,7 +1083,7 @@ namespace UniversalStorage2
             tglActionCombined.active = !lockPrimaryDoors && !lockSecondaryDoors && combinedActionAvailable;
         }
 
-        [KSPEvent(name = "lockSecondaryDoorsEvent", guiName = "Lock Secondary Bays", guiActive = false, guiActiveUnfocused = false, guiActiveEditor = true, active = false)]
+        [KSPEvent(name = "lockSecondaryDoorsEvent", guiName = "#autoLOC_US_LockSecondaryBays", guiActive = false, guiActiveUnfocused = false, guiActiveEditor = true, active = false)]
         public void lockSecondaryDoorsEvent()
         {
             if (!allowDoorLock)
@@ -1104,14 +1104,14 @@ namespace UniversalStorage2
             tglActionCombined.active = !lockPrimaryDoors && !lockSecondaryDoors && combinedActionAvailable;
         }
 
-        [KSPAction("Toggle All Bays")]
+        [KSPAction("#autoLOC_US_ToggleAllBays")]
 		public void toggleActionCombined(KSPActionParam param)
 		{
 			if (combinedAvailableInVessel)
 				toggleEventCombined();
 		}
 
-		[KSPEvent(name = "toggleEventCombined", guiName = "Deploy All Bays", guiActive = false, guiActiveUnfocused = false, unfocusedRange = 5f, guiActiveEditor = false)]
+		[KSPEvent(name = "toggleEventCombined", guiName = "#autoLOC_US_DeployAllBays", guiActive = false, guiActiveUnfocused = false, unfocusedRange = 5f, guiActiveEditor = false)]
 		public void toggleEventCombined()
 		{
 			combinedDeployed = !combinedDeployed;
@@ -1250,14 +1250,14 @@ namespace UniversalStorage2
 			}
 		}
 
-		[KSPAction("Toggle Primary Bays")]
+		[KSPAction("#autoLOC_US_TogglePrimaryBays")]
 		public void toggleActionPrimary(KSPActionParam param)
 		{
 			if (primaryAvailableInVessel)
 				toggleEventPrimary();
 		}
 
-		[KSPEvent(name = "toggleEventPrimary", guiName = "Deploy Primary Bays", guiActive = false, guiActiveUnfocused = false, unfocusedRange = 5f, guiActiveEditor = false)]
+		[KSPEvent(name = "toggleEventPrimary", guiName = "#autoLOC_US_DeployPrimaryBays", guiActive = false, guiActiveUnfocused = false, unfocusedRange = 5f, guiActiveEditor = false)]
 		public void toggleEventPrimary()
 		{
 			if (oneShot && primaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED)
@@ -1367,14 +1367,14 @@ namespace UniversalStorage2
 			}
 		}
 
-		[KSPAction("Toggle Secondary Bays")]
+		[KSPAction("#autoLOC_US_ToggleSecondaryBays")]
 		public void toggleActionSecondary(KSPActionParam param)
 		{
 			if (secondaryAvailableInVessel)
 				toggleEventSecondary();
 		}
 
-		[KSPEvent(name = "toggleEventSecondary", guiName = "Deploy Secondary Bays", guiActive = false, guiActiveUnfocused = false, unfocusedRange = 5f, guiActiveEditor = false)]
+		[KSPEvent(name = "toggleEventSecondary", guiName = "#autoLOC_US_DeploySecondaryBays", guiActive = false, guiActiveUnfocused = false, unfocusedRange = 5f, guiActiveEditor = false)]
 		public void toggleEventSecondary()
 		{
 			if (oneShot && secondaryAnimationState == ModuleAnimateGeneric.animationStates.FIXED)

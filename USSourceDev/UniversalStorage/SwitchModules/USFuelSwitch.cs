@@ -40,11 +40,11 @@ namespace UniversalStorage2
 		[KSPField]
 		public bool DebugMode = false;
         [KSPField]
-        public string DisplayCostName = "Dry Cost";
+        public string DisplayCostName = "#autoLOC_US_DryCost";
         [KSPField]
-        public string DisplayMassName = "Dry Mass";
+        public string DisplayMassName = "#autoLOC_US_DryMass";
         [KSPField]
-        public string ModuleDisplayName = "Fuel Switch";
+        public string ModuleDisplayName = "#autoLOC_US_FuelSwitch";
         [KSPField(guiActive = false, guiActiveEditor = true, guiName = "Dry cost")]
 		public float addedCost = 0f;
 		[KSPField(guiActive = false, guiActiveEditor = true, guiName = "Dry mass")]
@@ -198,7 +198,7 @@ namespace UniversalStorage2
             }
         }
 
-		[KSPEvent(guiActive=true, guiActiveEditor = true, guiName = "Next tank mode setup")]
+		[KSPEvent(guiActive=true, guiActiveEditor = true, guiName = "#autoLOC_US_NextTankModeSetup")]
 		public void nextModeEvent()
 		{
 			selectedTankModeTwo++;
@@ -209,7 +209,7 @@ namespace UniversalStorage2
 			assignResourcesToPart(true);
 		}
 
-		[KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Previous tank mode setup")]
+		[KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "#autoLOC_US_PrevTankModeSetup")]
 		public void previousModeEvent()
 		{
 			selectedTankModeTwo--;
@@ -220,7 +220,7 @@ namespace UniversalStorage2
 			assignResourcesToPart(true);
 		}
 
-		[KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Next tank setup")]
+		[KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "#autoLOC_US_NextTankSetup")]
 		public void nextTankSetupEvent()
 		{
 			selectedTankModeOne++;
@@ -231,7 +231,7 @@ namespace UniversalStorage2
 			assignResourcesToPart(true);
 		}
 
-		[KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "Previous tank setup")]
+		[KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "#autoLOC_US_PrevTankSetup")]
 		public void previousTankSetupEvent()
 		{
 			selectedTankModeOne--;
