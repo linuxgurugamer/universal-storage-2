@@ -81,8 +81,9 @@
 	Fixed microsats generating more nullrefs
 	Made all microsat animations available in the editor
 
-4.0.0.6 (unreleased)
+4.0.0.6 
 	Thanks to @leonardfactory for updating the Italian localization
+	Thanks to @leonardfactory for Add localization support for missing US modules strings
 	Thanks to @jamesErvin for updates to the English localization
 	Added DockingCamera support for the AdvancedMicroSatWedge
 
