@@ -4,12 +4,16 @@ using KSP.Localization;
 
 namespace UniversalStorage2
 {
-    public class USSolarSwitch : USBaseSwitch, IPartCostModifier
+    public class USSolarSwitch : USBaseSwitch, IPartCostModifier, IPartMassModifier
     {
         [KSPField]
         public string AddedCost = string.Empty;
         [KSPField]
+        public string AddedPanelMass = string.Empty;
+
+        [KSPField]
         public bool DisplayCurrentModeCost = false;
+
         [KSPField(guiActive = false, guiActiveEditor = false, guiName = "#autoLOC_US_SolarPanelCostField")]
         public float AddedCostValue = 0f;
         [KSPField]
@@ -26,6 +30,14 @@ namespace UniversalStorage2
         public float SunExposure;
         [KSPField(guiUnits = " ", guiFormat = "F3", guiActive = true, guiActiveEditor = false, guiName = "#autoLOC_6001421")]
         public float EnergyFlow;
+
+
+        [KSPField(guiUnits = " ", guiFormat = "F0", guiActive = false, guiActiveEditor = false, guiName = "Solar Cell Cost")]
+        public float SolarCellCost = 0;
+        [KSPField(guiUnits = " ", guiFormat = "F3", guiActive = false, guiActiveEditor = false, guiName = "Solar Cell Mass")]
+        public float SolarCellMass = 0;
+
+
         [KSPField(isPersistant = true)]
         public int CurrentSelection = 0;
         [KSPField(isPersistant = true)]
@@ -39,6 +51,8 @@ namespace UniversalStorage2
         public bool DebugMode = false;
         [KSPField]
         public bool SolarPanelsLocked = false;
+
+        private double[] _PanelMasses;
 
         private Shader _DebugLineShader;
 
@@ -77,6 +91,10 @@ namespace UniversalStorage2
         private string _localizedRetractedString = "Retracted";
         private string _localizedUnavailableString = "Unavailable";
 
+        private EventData<int, Part, USFuelSwitch> onFuelRequestMass;
+        private EventData<int, Part, USFuelSwitch> onFuelRequestCost;
+        private USFuelSwitch usFuelSwitch;
+
         private bool _started;
 
         public void DeploySolarPanels(bool isOn)
@@ -96,7 +114,20 @@ namespace UniversalStorage2
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
+            if (String.IsNullOrEmpty(SwitchID))
+                return;
 
+            _SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
+
+            _PanelMasses = USTools.parseDoubles(AddedPanelMass).ToArray();
+            if (_PanelMasses != null && _PanelMasses.Length > 0)
+            {
+                string m = "";
+                for (int i = 0; i < _PanelMasses.Length; i++)
+                    m += _PanelMasses[i].ToString() + ", ";
+                USdebugMessages.USStaticLog("USSolarSwitch.OnStart, _PanelMasses: " + m);
+
+            }
             _localizedSunlightString = Localizer.Format("#autoLOC_235418");
             _localizedUnderwaterString = Localizer.Format("#autoLOC_235468");
             _localizedActiveString = Localizer.Format("#autoLOC_900336");
@@ -143,6 +174,11 @@ namespace UniversalStorage2
                 SolarPanels = IsActive ? _localizedActiveString : _localizedInactiveString;
             else
                 SolarPanels = (IsDeployed || IsFixed)? "" : _localizedRetractedString;
+
+            onFuelRequestCost = GameEvents.FindEvent<EventData<int, Part, USFuelSwitch>>("onFuelRequestCost");
+            onFuelRequestMass = GameEvents.FindEvent<EventData<int, Part, USFuelSwitch>>("onFuelRequestMass");
+            usFuelSwitch = this.part.FindModuleImplementing<USFuelSwitch>();
+
         }
 
         public override void OnStartFinished(StartState state)
@@ -195,6 +231,9 @@ namespace UniversalStorage2
 
             IsActive = !IsActive;
 
+            Fields["SolarCellCost"].guiActiveEditor = IsActive;
+            Fields["SolarCellMass"].guiActiveEditor = IsActive;
+
             if (_solarMeshes != null)
             {
                 for (int i = _solarMeshes.Length - 1; i >= 0; i--)
@@ -212,6 +251,13 @@ namespace UniversalStorage2
             SolarPanels = IsActive ? _localizedActiveString : _localizedInactiveString;
 
             GameEvents.onEditorShipModified.Fire(EditorLogic.fetch.ship);
+
+            if (onFuelRequestCost != null)
+                onFuelRequestCost.Fire(0, part, usFuelSwitch);
+
+            if (onFuelRequestMass != null)
+                onFuelRequestMass.Fire(0, part, usFuelSwitch);
+
         }
 
         private void Update()
@@ -502,6 +548,7 @@ namespace UniversalStorage2
 
         public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
         {
+            SolarCellCost = 0;
             if (SolarPanelsLocked || !IsActive)
                 return 0;
 
@@ -511,13 +558,33 @@ namespace UniversalStorage2
                 cost = _Costs[CurrentSelection];
 
             AddedCostValue = cost;
-
+            SolarCellCost = cost;
             return cost;
         }
 
         public ModifierChangeWhen GetModuleCostChangeWhen()
         {
             return ModifierChangeWhen.CONSTANTLY;
+        }
+
+        public ModifierChangeWhen GetModuleMassChangeWhen()
+        {
+            return ModifierChangeWhen.CONSTANTLY;
+        }
+
+        public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
+        {
+            //USdebugMessages.USStaticLog("USSolarSwitch.GetModuleMass, IsActive: " + IsActive + ", CurrentSelection: " + CurrentSelection);
+            SolarCellMass = 0;
+            if (!IsActive)
+            {
+                return 0;
+            }
+
+            if (_PanelMasses != null && _PanelMasses.Length >= CurrentSelection)
+                SolarCellMass = (float)_PanelMasses[CurrentSelection];
+            USdebugMessages.USStaticLog("USSolarSwitch.GetModuleMass, SolarCellMass: " + SolarCellMass);
+            return SolarCellMass;
         }
     }
 }

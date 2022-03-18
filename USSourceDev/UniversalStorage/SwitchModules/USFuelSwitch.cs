@@ -6,10 +6,10 @@ using KSP.Localization;
 namespace UniversalStorage2
 {
 	public class USFuelSwitch : PartModule, IPartCostModifier, IPartMassModifier
-    {
-        [KSPField]
-        public string SwitchID = string.Empty;
-        [KSPField]
+	{
+		[KSPField]
+		public string SwitchID = string.Empty;
+		[KSPField]
 		public string resourceNames = "ElectricCharge;ElectricCharge|LiquidFuel,Oxidizer;LiquidFuel,Oxidizer|MonoPropellant;MonoPropellant|Structural;Structural";
 		[KSPField]
 		public string resourceAmounts = "100;100|75,25;75,25|200;200|0;0";
@@ -21,9 +21,9 @@ namespace UniversalStorage2
 		public string tankCost = "0;0|0;0|0;0|0;0";
 		[KSPField]
 		public bool displayCurrentTankCost = true;
-        [KSPField]
-        public bool displayCurrentTankDryMass = true;
-        [KSPField]
+		[KSPField]
+		public bool displayCurrentTankDryMass = true;
+		[KSPField]
 		public bool availableInFlight = false;
 		[KSPField]
 		public bool availableInEditor = false;
@@ -39,22 +39,23 @@ namespace UniversalStorage2
 		public bool configLoaded = false;
 		[KSPField]
 		public bool DebugMode = false;
-        [KSPField]
-        public string DisplayCostName = "#autoLOC_US_DryCost";
-        [KSPField]
-        public string DisplayMassName = "#autoLOC_US_DryMass";
-        [KSPField]
-        public string ModuleDisplayName = "#autoLOC_US_FuelSwitch";
-        [KSPField(guiActive = false, guiActiveEditor = true, guiName = "Dry cost")]
+		[KSPField]
+		public string DisplayCostName = "#autoLOC_US_DryCost";
+		[KSPField]
+		public string DisplayMassName = "#autoLOC_US_DryMass";
+		[KSPField]
+		public string ModuleDisplayName = "#autoLOC_US_FuelSwitch";
+
+		[KSPField(guiActive = false, guiActiveEditor = true, guiName = "Dry cost")]
 		public float addedCost = 0f;
 		[KSPField(guiActive = false, guiActiveEditor = true, guiName = "Dry mass")]
 		public float dryMassInfo = 0f;
 
 		private List<List<List<USResource>>> tankList;
 
-        private int[] _SwitchIndices;
+		private int[] _SwitchIndices;
 
-        private float meshCost = 0;
+		private float meshCost = 0;
 		private float meshMass = 0;
 
 		private List<List<double>> weightList;
@@ -65,35 +66,39 @@ namespace UniversalStorage2
 		UIPartActionWindow tweakableUI;
 
 		private USdebugMessages debug;
-        
-        private EventData<int, int, bool, Part> onUSFuelSwitch;
-        private EventData<int, Part, USFuelSwitch> onFuelRequestMass;
-        private EventData<int, Part, USFuelSwitch> onFuelRequestCost;
 
-        private string _localizedDryCostString = "Dry Cost";
-        private string _localizedDryMassString = "Dry Mass";
+		private EventData<int, int, bool, Part> onUSFuelSwitch;
+		private EventData<int, Part, USFuelSwitch> onFuelRequestMass;
+		private EventData<int, Part, USFuelSwitch> onFuelRequestCost;
 
-        public override void OnStart(PartModule.StartState state)
-        {
-            if (String.IsNullOrEmpty(SwitchID))
-                return;
+		private string _localizedDryCostString = "Dry Cost";
+		private string _localizedDryMassString = "Dry Mass";
 
-            _SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
+		private USSolarSwitch solarSwitchModule = null;
 
-            onFuelRequestCost = GameEvents.FindEvent<EventData<int, Part, USFuelSwitch>>("onFuelRequestCost");
-            onFuelRequestMass = GameEvents.FindEvent<EventData<int, Part, USFuelSwitch>>("onFuelRequestMass");
-            onUSFuelSwitch = GameEvents.FindEvent<EventData<int, int, bool, Part>>("onUSFuelSwitch");
+		public override void OnStart(PartModule.StartState state)
+		{
+			if (String.IsNullOrEmpty(SwitchID))
+				return;
 
-            _localizedDryCostString = Localizer.Format(DisplayCostName);
-            _localizedDryMassString = Localizer.Format(DisplayMassName);
+			_SwitchIndices = USTools.parseIntegers(SwitchID).ToArray();
 
-            Fields["addedCost"].guiName = _localizedDryCostString;
-            Fields["dryMassInfo"].guiName = _localizedDryMassString;
+			onFuelRequestCost = GameEvents.FindEvent<EventData<int, Part, USFuelSwitch>>("onFuelRequestCost");
+			onFuelRequestMass = GameEvents.FindEvent<EventData<int, Part, USFuelSwitch>>("onFuelRequestMass");
+			onUSFuelSwitch = GameEvents.FindEvent<EventData<int, int, bool, Part>>("onUSFuelSwitch");
 
-            if (onUSFuelSwitch != null)
-                onUSFuelSwitch.Add(OnFuelSwitch);
-            
-            initializeData();
+			solarSwitchModule = part.FindModuleImplementing<USSolarSwitch>();
+
+			_localizedDryCostString = Localizer.Format(DisplayCostName);
+			_localizedDryMassString = Localizer.Format(DisplayMassName);
+
+			Fields["addedCost"].guiName = _localizedDryCostString;
+			Fields["dryMassInfo"].guiName = _localizedDryMassString;
+
+			if (onUSFuelSwitch != null)
+				onUSFuelSwitch.Add(OnFuelSwitch);
+
+			initializeData();
 
 			if (selectedTankModeOne == -1 || selectedTankModeTwo == -1)
 			{
@@ -102,8 +107,8 @@ namespace UniversalStorage2
 				assignResourcesToPart(false);
 			}
 
-            onFuelRequestMass.Fire(_SwitchIndices[0], part, this);
-            onFuelRequestCost.Fire(_SwitchIndices[0], part, this);
+			onFuelRequestMass.Fire(_SwitchIndices[0], part, this);
+			onFuelRequestCost.Fire(_SwitchIndices[0], part, this);
 		}
 
 		public override void OnAwake()
@@ -112,19 +117,19 @@ namespace UniversalStorage2
 				initializeData();
 		}
 
-        private void OnDestroy()
-        {
-            if (onUSFuelSwitch != null)
-                onUSFuelSwitch.Remove(OnFuelSwitch);
-        }
+		private void OnDestroy()
+		{
+			if (onUSFuelSwitch != null)
+				onUSFuelSwitch.Remove(OnFuelSwitch);
+		}
 
-        public override void OnLoad(ConfigNode node)
+		public override void OnLoad(ConfigNode node)
 		{
 			base.OnLoad(node);
 
 			if (!configLoaded)
 				initializeData();
-            
+
 			configLoaded = true;
 		}
 
@@ -146,59 +151,59 @@ namespace UniversalStorage2
 				return base.GetInfo();
 		}
 
-        public override string GetModuleDisplayName()
-        {
-            return Localizer.Format(ModuleDisplayName);
-        }
+		public override string GetModuleDisplayName()
+		{
+			return Localizer.Format(ModuleDisplayName);
+		}
 
-        private void initializeData()
-        {
-            if (!initialized)
-            {
-                debug = new USdebugMessages(DebugMode, "USFuelSwitch");
+		private void initializeData()
+		{
+			if (!initialized)
+			{
+				debug = new USdebugMessages(DebugMode, "USFuelSwitch");
 
-                setupTankList();
+				setupTankList();
 
-                weightList = new List<List<double>>();
+				weightList = new List<List<double>>();
 
-                string[] weights = tankMass.Split('|');
+				string[] weights = tankMass.Split('|');
 
-                for (int i = 0; i < weights.Length; i++)
-                {
-                    weightList.Add(USTools.parseDoubles(weights[i]));
-                }
+				for (int i = 0; i < weights.Length; i++)
+				{
+					weightList.Add(USTools.parseDoubles(weights[i]));
+				}
 
-                tankCostList = new List<List<double>>();
+				tankCostList = new List<List<double>>();
 
-                string[] costs = tankCost.Split('|');
+				string[] costs = tankCost.Split('|');
 
-                for (int i = 0; i < costs.Length; i++)
-                {
-                    tankCostList.Add(USTools.parseDoubles(costs[i]));
-                }
+				for (int i = 0; i < costs.Length; i++)
+				{
+					tankCostList.Add(USTools.parseDoubles(costs[i]));
+				}
 
-                if (HighLogic.LoadedSceneIsFlight)
-                    hasLaunched = true;
+				if (HighLogic.LoadedSceneIsFlight)
+					hasLaunched = true;
 
-                Events["nextTankSetupEvent"].guiActive = availableInFlight;
-                Events["nextTankSetupEvent"].guiActiveEditor = availableInEditor;
-                Events["previousTankSetupEvent"].guiActive = availableInFlight;
-                Events["previousTankSetupEvent"].guiActiveEditor = availableInEditor;
-                Events["nextModeEvent"].guiActive = availableInFlight;
-                Events["nextModeEvent"].guiActiveEditor = availableInEditor;
-                Events["previousModeEvent"].guiActive = availableInFlight;
-                Events["previousModeEvent"].guiActiveEditor = availableInEditor;
+				Events["nextTankSetupEvent"].guiActive = availableInFlight;
+				Events["nextTankSetupEvent"].guiActiveEditor = availableInEditor;
+				Events["previousTankSetupEvent"].guiActive = availableInFlight;
+				Events["previousTankSetupEvent"].guiActiveEditor = availableInEditor;
+				Events["nextModeEvent"].guiActive = availableInFlight;
+				Events["nextModeEvent"].guiActiveEditor = availableInEditor;
+				Events["previousModeEvent"].guiActive = availableInFlight;
+				Events["previousModeEvent"].guiActiveEditor = availableInEditor;
 
-                if (HighLogic.CurrentGame == null || HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
-                    Fields["addedCost"].guiActiveEditor = displayCurrentTankCost;
+				if (HighLogic.CurrentGame == null || HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+					Fields["addedCost"].guiActiveEditor = displayCurrentTankCost;
 
-                Fields["dryMassInfo"].guiActiveEditor = displayCurrentTankDryMass;
+				Fields["dryMassInfo"].guiActiveEditor = displayCurrentTankDryMass;
 
-                initialized = true;
-            }
-        }
+				initialized = true;
+			}
+		}
 
-		[KSPEvent(guiActive=true, guiActiveEditor = true, guiName = "#autoLOC_US_NextTankModeSetup")]
+		[KSPEvent(guiActive = true, guiActiveEditor = true, guiName = "#autoLOC_US_NextTankModeSetup")]
 		public void nextModeEvent()
 		{
 			selectedTankModeTwo++;
@@ -242,55 +247,55 @@ namespace UniversalStorage2
 			assignResourcesToPart(true);
 		}
 
-        private void OnFuelSwitch(int index, int selection, bool modeOne, Part p)
-        {
-            if (p != part)
-                return;
+		private void OnFuelSwitch(int index, int selection, bool modeOne, Part p)
+		{
+			if (p != part)
+				return;
 
-            for (int i = _SwitchIndices.Length - 1; i >= 0; i--)
-            {
-                if (_SwitchIndices[i] == index)
-                {
-                    if (modeOne)
-                    {
-                        selectedTankModeOne = selection;
+			for (int i = _SwitchIndices.Length - 1; i >= 0; i--)
+			{
+				if (_SwitchIndices[i] == index)
+				{
+					if (modeOne)
+					{
+						selectedTankModeOne = selection;
 
-                        if (onFuelRequestCost != null)
-                            onFuelRequestCost.Fire(index, part, this);
+						if (onFuelRequestCost != null)
+							onFuelRequestCost.Fire(index, part, this);
 
-                        if (onFuelRequestMass != null)
-                            onFuelRequestMass.Fire(index, part, this);
+						if (onFuelRequestMass != null)
+							onFuelRequestMass.Fire(index, part, this);
 
-                        assignResourcesToPart(true);
-                    }
-                    else
-                    {
-                        selectedTankModeTwo = selection;
+						assignResourcesToPart(true);
+					}
+					else
+					{
+						selectedTankModeTwo = selection;
 
-                        if (onFuelRequestCost != null)
-                            onFuelRequestCost.Fire(index, part, this);
+						if (onFuelRequestCost != null)
+							onFuelRequestCost.Fire(index, part, this);
 
-                        if (onFuelRequestMass != null)
-                            onFuelRequestMass.Fire(index, part, this);
+						if (onFuelRequestMass != null)
+							onFuelRequestMass.Fire(index, part, this);
 
-                        assignResourcesToPart(true);
-                    }
+						assignResourcesToPart(true);
+					}
 
-                    break;
-                }
-            }
-        }
+					break;
+				}
+			}
+		}
 
-        public void setMeshCost(float cost)
-        {
-            meshCost = cost;
-        }
+		public void setMeshCost(float cost)
+		{
+			meshCost = cost;
+		}
 
-        public void setMeshMass(float mass)
-        {
-            meshMass = mass;
-        }
-        
+		public void setMeshMass(float mass)
+		{
+			meshMass = mass;
+		}
+
 		private void assignResourcesToPart(bool calledByPlayer)
 		{
 			// destroying a resource messes up the gui in editor, but not in flight.
@@ -318,7 +323,7 @@ namespace UniversalStorage2
 			if (tweakableUI != null)
 				tweakableUI.displayDirty = true;
 			else
-                debug.debugMessage("no UI to refresh");
+				debug.debugMessage("no UI to refresh");
 		}
 
 		private void setupTankInPart(Part currentPart, bool calledByPlayer)
@@ -328,15 +333,15 @@ namespace UniversalStorage2
 
 			for (int i = 0; i < tankList.Count; i++)
 			{
-                if (DebugMode)
-    				debug.debugMessage(string.Format("Tank Mode: {0} - Selection: {1}", i, selectedTankModeTwo));
+				if (DebugMode)
+					debug.debugMessage(string.Format("Tank Mode: {0} - Selection: {1}", i, selectedTankModeTwo));
 
-                if (selectedTankModeTwo == i)
+				if (selectedTankModeTwo == i)
 				{
 					for (int j = 0; j < tankList[i].Count; j++)
 					{
-                        if (DebugMode)
-                            debug.debugMessage(string.Format("Tank: {0} - Selection: {1}", j, selectedTankModeOne));
+						if (DebugMode)
+							debug.debugMessage(string.Format("Tank: {0} - Selection: {1}", j, selectedTankModeOne));
 
 						if (selectedTankModeOne == j)
 						{
@@ -354,10 +359,10 @@ namespace UniversalStorage2
 									else
 										newResourceNode.AddValue("amount", res.amount);
 
-                                    if (DebugMode)
-                                        debug.debugMessage(string.Format("Switch to new resource: {0} - Amount: {1:N2} - Max: {2:N2}", res.name, res.amount, res.maxAmount));
+									if (DebugMode)
+										debug.debugMessage(string.Format("Switch to new resource: {0} - Amount: {1:N2} - Max: {2:N2}", res.name, res.amount, res.maxAmount));
 
-                                    currentPart.AddResource(newResourceNode);
+									currentPart.AddResource(newResourceNode);
 								}
 							}
 						}
@@ -423,7 +428,7 @@ namespace UniversalStorage2
 				resourceList.Add(resourceTankAmounts);
 				initialResourceList.Add(initResourceTankAmounts);
 			}
-			
+
 			// Then find the kinds of resources each tank holds, and fill them with the amounts found previously, or the amount they held last (values kept in save persistence/craft)
 			string[] modeArray = resourceNames.Split('|');
 
@@ -512,6 +517,10 @@ namespace UniversalStorage2
 
 				cost -= def.unitCost * (float)res.maxAmount;
 			}
+			if (solarSwitchModule)
+			{
+				cost += solarSwitchModule.GetModuleCost(0, ModifierStagingSituation.CURRENT);
+			}
 
 			return cost;
 		}
@@ -530,7 +539,14 @@ namespace UniversalStorage2
 
 			float newMass = mass + meshMass;
 
+			if (solarSwitchModule!=null)
+			{
+				newMass += solarSwitchModule.GetModuleMass(0, ModifierStagingSituation.CURRENT);
+			}
+
+
 			dryMassInfo = currentPart.partInfo.partPrefab.mass + newMass;
+
 
 			return newMass;
 		}

@@ -43,6 +43,8 @@ namespace UniversalStorage2
 
 		public static List<double> parseDoubles(string stringOfDoubles, char sep = ';')
 		{
+            if (stringOfDoubles == "")
+                return null;
 			List<double> list = new List<double>();
 			string[] array = stringOfDoubles.Trim().Split(sep);
 			for (int i = 0; i < array.Length; i++)

@@ -26,6 +26,7 @@ namespace UniversalStorage2
 
         private string _localizedDryCostString = "Part Cost";
 
+        private USSolarSwitch solarSwitchModule = null;
         public override void OnAwake()
         {
             base.OnAwake();
@@ -35,7 +36,7 @@ namespace UniversalStorage2
             if (onFuelRequestCost != null)
                 onFuelRequestCost.Add(onFuelSwitchRequest);
 
-            _localizedDryCostString = Localizer.Format(DisplayCostName);
+            //_localizedDryCostString = Localizer.Format(DisplayCostName);
 
             Fields["AddedCostValue"].guiName = _localizedDryCostString;
         }
@@ -48,7 +49,7 @@ namespace UniversalStorage2
                 return;
 
             _partCostModifiers = part.FindModulesImplementing<IPartCostModifier>();
-
+            solarSwitchModule = part.FindModuleImplementing<USSolarSwitch>();
             for (int i = _partCostModifiers.Count - 1; i >= 0; i--)
             {
                 if (_partCostModifiers[i] == (IPartCostModifier)this)
@@ -116,7 +117,10 @@ namespace UniversalStorage2
             if (_Costs.Length > CurrentSelection)
                 cost = (float)_Costs[CurrentSelection];
 
-            fuel.setMeshCost(cost);            
+            fuel.setMeshCost(cost);
+
+            AddedCostValue = AddedCostValue = part.partInfo.cost + cost;            
+            UpdateSolarCost();
         }
 
         private float UpdateCost()
@@ -132,10 +136,20 @@ namespace UniversalStorage2
             {
                 otherCosts += _partCostModifiers[i].GetModuleCost(0, ModifierStagingSituation.CURRENT);
             }
-            
+
+            USdebugMessages.USStaticLog("USCostSwitch.GetModuleMass,  CurrentSelection: " + CurrentSelection);
             AddedCostValue = part.partInfo.cost + cost + otherCosts;
 
+
             return cost;
+        }
+        private void UpdateSolarCost()
+        {
+            if (solarSwitchModule!=null)
+            {
+                AddedCostValue += solarSwitchModule.GetModuleCost(0, ModifierStagingSituation.CURRENT);
+                  USdebugMessages.USStaticLog("USCostSwitch.GetModuleMass, solarSwitchModuleCost: " + solarSwitchModule.GetModuleCost(0, ModifierStagingSituation.CURRENT));
+          }
         }
 
         public float GetModuleCost(float defaultCost, ModifierStagingSituation sit)
@@ -143,7 +157,9 @@ namespace UniversalStorage2
             if (!_updateCost)
                 return 0;
 
-            return UpdateCost();
+            var m = UpdateCost();
+            UpdateSolarCost();
+            return m;
         }
 
         public ModifierChangeWhen GetModuleCostChangeWhen()

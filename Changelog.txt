@@ -87,5 +87,11 @@
 	Thanks to @jamesErvin for updates to the English localization
 	Added DockingCamera support for the AdvancedMicroSatWedge
 
+4.0.0.7
+	Fixed drag cube for the ACDSmall, ACD1500, ACDLarge decoupler
+	Added Mass to USSolarSwitch
+	Added display of mass & cost of USSolarSwitch to PAW
+	Fixed IndexOutOfRange exception for microsats, due to no _PanelMasses specified (was added for embedded panels)
+
 TODO
 	Update all language files for missing fields

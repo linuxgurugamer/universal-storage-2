@@ -22,6 +22,7 @@ namespace UniversalStorage2
         private bool _updateMass = true;
 
         private string _localizedDryMassString = "Part Mass";
+        private USSolarSwitch solarSwitchModule = null;
 
         public override void OnAwake()
         {
@@ -45,8 +46,9 @@ namespace UniversalStorage2
                 return;
 
             _Masses = USTools.parseDoubles(AddedMass).ToArray();
-            
-            Fields["DryMassInfo"].guiActiveEditor = DisplayCurrentModeMass;            
+
+            Fields["DryMassInfo"].guiActiveEditor = DisplayCurrentModeMass;
+            solarSwitchModule = part.FindModuleImplementing<USSolarSwitch>();
         }
 
         private void OnDestroy()
@@ -103,6 +105,10 @@ namespace UniversalStorage2
                 mass = (float)_Masses[CurrentSelection];
 
             fuel.setMeshMass(mass);
+
+            DryMassInfo = DryMassInfo = part.partInfo.cost + mass;
+            UpdateSolarMass();
+
         }
 
         private float UpdateWeight(Part currentPart)
@@ -116,13 +122,24 @@ namespace UniversalStorage2
 
             return mass;
         }
-        
+
+        private void UpdateSolarMass()
+        {
+            if (solarSwitchModule != null)
+            {
+                DryMassInfo += solarSwitchModule.GetModuleMass(0, ModifierStagingSituation.CURRENT);
+                USdebugMessages.USStaticLog("USCostSwitch.GetModuleMass, solarSwitchModuleCost: " + solarSwitchModule.GetModuleCost(0, ModifierStagingSituation.CURRENT));
+            }
+        }
+
         public float GetModuleMass(float defaultMass, ModifierStagingSituation sit)
         {
             if (!_updateMass)
                 return 0;
 
-            return UpdateWeight(part);
+            var m = UpdateWeight(part);
+            UpdateSolarMass();
+            return m;
         }
 
         public ModifierChangeWhen GetModuleMassChangeWhen()
