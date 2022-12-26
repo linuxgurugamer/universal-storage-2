@@ -329,6 +329,12 @@ namespace UniversalStorage2
             _animSpeed = customAnimationSpeed;
         }
 
+        void OnDestroy()
+        {
+            if (onUSSwitch != null)
+                onUSSwitch.Remove(onSwitch);
+        }
+
         public override void OnStartFinished(StartState state)
         {
             base.OnStartFinished(state);

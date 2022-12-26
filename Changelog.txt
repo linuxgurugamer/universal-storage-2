@@ -93,5 +93,14 @@
 	Added display of mass & cost of USSolarSwitch to PAW
 	Fixed IndexOutOfRange exception for microsats, due to no _PanelMasses specified (was added for embedded panels)
 
+4.0.0.8
+	Thanks to github user @jvosk for this:
+		Simple typo fix; Brimary -> Primary
+	Fixed CargoSTorageWedge missing a field: packedVolumeLimit in the ModuleInventoryPart (needed for KSPPartVolume)
+	Fixed small memory leak by not removing a callback from a game event
+	Thanks to github user @T2Fat2Fly for this fix:
+		Fix attN = Null for NodeSwitchable parts
+
+
 TODO
 	Update all language files for missing fields
