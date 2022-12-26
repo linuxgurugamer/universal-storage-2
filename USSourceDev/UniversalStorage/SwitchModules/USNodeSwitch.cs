@@ -140,9 +140,11 @@ namespace UniversalStorage2
 
             ModulePartVariants.UpdatePartPosition(previousNode, newNode);
 
-            newNode.attachedPart = previousNode.attachedPart;
+            var prevAttatchedPart = previousNode.attachedPart;
 
             previousNode.attachedPart = null;
+
+            newNode.attachedPart = prevAttatchedPart;
         }
     }
 }
