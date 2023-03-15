@@ -234,3 +234,4 @@ $RECYCLE.BIN/
 *.pdb
 .vs
 *.csproj
+USSourceDev/UniversalStorage/AssemblyVersion.cs
