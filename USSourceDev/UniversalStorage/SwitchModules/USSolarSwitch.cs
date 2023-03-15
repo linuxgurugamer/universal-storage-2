@@ -6,23 +6,23 @@ namespace UniversalStorage2
 {
     public class USSolarSwitch : USBaseSwitch, IPartCostModifier, IPartMassModifier
     {
-        [KSPField]
-        public string AddedCost = string.Empty;
-        [KSPField]
-        public string AddedPanelMass = string.Empty;
+        [KSPField(isPersistant = false)]
+        public string AddedCost;
+        [KSPField(isPersistant = false)]
+        public string AddedPanelMass;
 
-        [KSPField]
+        [KSPField(isPersistant = false)]
         public bool DisplayCurrentModeCost = false;
 
         [KSPField(guiActive = false, guiActiveEditor = false, guiName = "#autoLOC_US_SolarPanelCostField")]
         public float AddedCostValue = 0f;
-        [KSPField]
-        public string chargeRate = string.Empty;
-        [KSPField]
-        public string secondaryTransformName = string.Empty;
-        [KSPField]
-        public string solarMeshTransformName = string.Empty;
-        [KSPField]
+        [KSPField(isPersistant = false)]
+        public string chargeRate;
+        [KSPField(isPersistant = false)]
+        public string secondaryTransformName;
+        [KSPField(isPersistant = false)]
+        public string solarMeshTransformName;
+        [KSPField(isPersistant = false)]
         public string resourceName;
         [KSPField(guiActive = true, guiActiveEditor = true, guiName = "#autoLOC_234370")]
         public string SolarPanels;
