@@ -235,3 +235,4 @@ $RECYCLE.BIN/
 .vs
 *.csproj
 USSourceDev/UniversalStorage/AssemblyVersion.cs
+*.csproj-orig
