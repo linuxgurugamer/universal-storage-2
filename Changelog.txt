@@ -111,6 +111,9 @@
 		Fixed Advance Satellite's solar panels
 		Update GUI a bit
 
+4.0.1.1
+	Thanks to @lisias for pointing out a debug statement
+	Disabled debug message in GetModuleMass, newest KSP Recall was triggering endless messages
 
 TODO
 	Update all language files for missing fields

@@ -583,7 +583,7 @@ namespace UniversalStorage2
 
             if (_PanelMasses != null && _PanelMasses.Length >= CurrentSelection)
                 SolarCellMass = (float)_PanelMasses[CurrentSelection];
-            USdebugMessages.USStaticLog("USSolarSwitch.GetModuleMass, SolarCellMass: " + SolarCellMass);
+            //USdebugMessages.USStaticLog("USSolarSwitch.GetModuleMass, SolarCellMass: " + SolarCellMass);
             return SolarCellMass;
         }
     }
