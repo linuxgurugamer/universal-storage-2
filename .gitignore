@@ -233,6 +233,3 @@ $RECYCLE.BIN/
 *.dll
 *.pdb
 .vs
-*.csproj
-USSourceDev/UniversalStorage/AssemblyVersion.cs
-*.csproj-orig
