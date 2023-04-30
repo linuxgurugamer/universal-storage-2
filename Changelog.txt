@@ -102,5 +102,12 @@
 		Fix attN = Null for NodeSwitchable parts
 
 
+4.0.0.9 (unreleased)
+	Thanks to github user @Grimmas for this:
+		fix wrong usage mask (L-ALT experiment has bad crew requirements)
+	Thanks to github user @Starstrider42 for this:
+		Bring Octo CLS switcher in line with main type switch
+	
+
 TODO
 	Update all language files for missing fields
