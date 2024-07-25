@@ -115,5 +115,8 @@
 	Thanks to @lisias for pointing out a debug statement
 	Disabled debug message in GetModuleMass, newest KSP Recall was triggering endless messages
 
+4.0.1.2
+	Disabled debug message in GetModuleMass, newest KSP Recall was triggering endless messages
+
 TODO
 	Update all language files for missing fields

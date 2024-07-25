@@ -137,7 +137,7 @@ namespace UniversalStorage2
                 otherCosts += _partCostModifiers[i].GetModuleCost(0, ModifierStagingSituation.CURRENT);
             }
 
-            USdebugMessages.USStaticLog("USCostSwitch.GetModuleMass,  CurrentSelection: " + CurrentSelection);
+            //USdebugMessages.USStaticLog("USCostSwitch.GetModuleMass,  CurrentSelection: " + CurrentSelection);
             AddedCostValue = part.partInfo.cost + cost + otherCosts;
 
 
