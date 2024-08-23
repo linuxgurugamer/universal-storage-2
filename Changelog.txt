@@ -118,5 +118,10 @@
 4.0.1.2
 	Disabled debug message in GetModuleMass, newest KSP Recall was triggering endless messages
 
+4.0.1.3
+	Thanks to github user @CyberKiller for this:
+		Fixes missing experimentActionName for solar particle collector showing "#autoLOC_6001437" instead of "Collect Solar Particles"
+
+
 TODO
 	Update all language files for missing fields
