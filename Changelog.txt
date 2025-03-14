@@ -122,6 +122,10 @@
 	Thanks to github user @CyberKiller for this:
 		Fixes missing experimentActionName for solar particle collector showing "#autoLOC_6001437" instead of "Collect Solar Particles"
 
+4.0.1.4
+	Thanks to github user @ListenThink for this:
+		Add zh-cn Localization
+	Fixed the Elektron ratio of H2:O, was reversed
 
 TODO
 	Update all language files for missing fields
