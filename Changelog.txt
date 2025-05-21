@@ -152,5 +152,10 @@
 	Fixed exception on boot in the USScienceContainer (caused by initializing fields which only are initialized during the game)
 	Fixed the USScienceContainer not being able to do a Collect All
 
+4.0.2.2
+	Shrank the hexcore by about 10% to fit in the resized 1.875 fairing (which was upsized from 1.5).  Note that the resized fairing is designed for a quad core.  While the hex core now fits, the components may not line up with openings in the fairing (which change depending on the height)
+	Fixed the Data Input Terminal to deploy keyboard before collecting data
+	Fixed the engines in the Advanced MicroSat, they now work properly and do not start being enabled and active at launch from the editor
+
 TODO
 	Update all language files for missing fields

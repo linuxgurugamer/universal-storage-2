@@ -25,7 +25,8 @@ namespace UniversalStorage2
         public float interactionRange = 3;
         [KSPField]
         public bool autoRetract = false;
-
+        [KSPField]
+        public float maxAnimationLength = 0;
 
         [KSPField]
         public float animSpeed = 1f;
@@ -53,30 +54,38 @@ namespace UniversalStorage2
                 animations[0] = SetUpAnimation(deployAnimationName, part);
                 animations[1] = SetUpAnimation(doorAnimationName, part);
                 animations[2] = SetUpAnimation(paperfeedAnimationName, part);
-                Events["StartEventGUIName"].guiName = startEventGUIName;
-                Events["EndEventGUIName"].guiName = endEventGUIName;
-                Events["StartEventGUIName"].unfocusedRange = interactionRange;
-                Events["EndEventGUIName"].unfocusedRange = interactionRange;
+                Events["DeployKeyboardGUIName"].guiName = startEventGUIName;
+                Events["RetractKeyboardGUIName"].guiName = endEventGUIName;
+                Events["DeployKeyboardGUIName"].unfocusedRange = interactionRange;
+                Events["RetractKeyboardGUIName"].unfocusedRange = interactionRange;
+
+
             }
 
         }
 
         void UpdateActions()
         {
-            Events["CollectAllEvent"].active = true;
-            Events["CollectAllEvent"].guiActive = 
-                Events["CollectAllEvent"].guiActiveUnfocused = !IsDeployed;
+            Events["CollectAllEvent"].active =
+                Events["CollectAllEvent"].guiActive =
+                Events["CollectAllEvent"].guiActiveUnfocused = fullyDeployed;
 
-            Events["CollectDataExternalEvent"].active = true;
-            Events["CollectDataExternalEvent"].guiActive = 
+            Events["CollectDataExternalEvent"].active =
+                Events["CollectDataExternalEvent"].guiActive =
                 Events["CollectDataExternalEvent"].guiActiveUnfocused = IsDeployed;
 
-            Events["StartEventGUIName"].guiActiveUnfocused = !IsDeployed;
-            Events["EndEventGUIName"].guiActiveUnfocused = IsDeployed;
+            Events["DeployKeyboardGUIName"].active =
+                Events["DeployKeyboardGUIName"].guiActive =
+                Events["DeployKeyboardGUIName"].guiActiveUnfocused = !IsDeployed;
+
+            Events["RetractKeyboardGUIName"].active =
+                Events["RetractKeyboardGUIName"].guiActive =
+            Events["RetractKeyboardGUIName"].guiActiveUnfocused = IsDeployed;
         }
 
-        [KSPEvent(active = true, guiActive = false, guiActiveUnfocused = true, guiName = "#autoLOC_6001808")]
-        public void StartEventGUIName()
+        //[KSPEvent(active = true, guiActive = false, guiActiveUnfocused = true, guiName = "#autoLOC_6001808")]
+        [KSPEvent(active = true, guiActive = true, guiActiveUnfocused = true, guiName = "Deploy Keyboard")]
+        public void DeployKeyboardGUIName()
         {
             IsDeployed = true;
             UpdateActions();
@@ -86,8 +95,9 @@ namespace UniversalStorage2
             StartCoroutine(SlowUpdate());
         }
 
-        [KSPEvent(active = true, guiActive = false, guiActiveUnfocused = true, guiName = "#autoLOC_6001808")]
-        public void EndEventGUIName()
+        //[KSPEvent(active = true, guiActive = false, guiActiveUnfocused = true, guiName = "#autoLOC_6001808")]
+        [KSPEvent(active = true, guiActive = true, guiActiveUnfocused = true, guiName = "Retract Keyboard")]
+        public void RetractKeyboardGUIName()
         {
             IsDeployed = false;
             UpdateActions();
@@ -113,8 +123,12 @@ namespace UniversalStorage2
             return animInfo;
         }
 
+
+        bool fullyDeployed = false;
         IEnumerator SlowUpdate()
         {
+            float start = Time.time;
+
             while (true)
             {
                 if (IsDeployed)
@@ -130,11 +144,31 @@ namespace UniversalStorage2
                             animations[activeAnim].anim.Play();
                         }
                         else
+                        {
+                            fullyDeployed = true;
+                            UpdateActions();
                             break;
+                        }
+                    }
+                    else
+                    {
+                        if (activeAnim == animations.Length)
+                        {
+                            fullyDeployed = true;
+                            UpdateActions();
+                            break;
+                        }
+                    }
+                    if (maxAnimationLength > 0 && Time.time - start >= maxAnimationLength)
+                    {
+                        fullyDeployed = true;
+                        UpdateActions();
                     }
                 }
                 else
                 {
+                    fullyDeployed = false;
+                    UpdateActions();
                     if (animations[activeAnim].anim.isPlaying && animations[activeAnim].anim[animations[activeAnim].animationName].time <= 0)
                     {
                         animations[activeAnim].anim.Stop();

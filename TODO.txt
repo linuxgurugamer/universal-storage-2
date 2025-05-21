@@ -1,3 +1,5 @@
+Advanced microsat has odd issue, it starts enabled, and messes things up
+
 Fix description of the MapCamWedge
 Fix functionality of MapCam Wedge
 	So if Greebles are off, CaseOpen should not be visible - DONE - need to test on other shrouds

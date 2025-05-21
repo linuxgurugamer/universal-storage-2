@@ -15,8 +15,8 @@ namespace UniversalStorage2.SwitchModules
         public bool availableInEditor = false;
         [KSPField]
         public bool ShowInfo = true;
-        [KSPField(isPersistant = true)]
-        public bool hasLaunched = false;
+        //[KSPField(isPersistant = true)]
+        // public bool hasLaunched = false;
         [KSPField(isPersistant = true)]
         public bool configLoaded = false;
         [KSPField]
@@ -141,8 +141,8 @@ namespace UniversalStorage2.SwitchModules
                 setupEngineList();
 
 
-                if (HighLogic.LoadedSceneIsFlight)
-                    hasLaunched = true;
+                // if (HighLogic.LoadedSceneIsFlight)
+                //     hasLaunched = true;
 
                 initialized = true;
             }
@@ -154,14 +154,11 @@ namespace UniversalStorage2.SwitchModules
             if (p != part)
                 return;
 
-            debug.Log("US2: USEngineSwitch.OnFuelSwitch, selection: " + selection + ", index: " + index);
-
             selectedEngine = selection;
             SelectEngine(selectedEngine);
         }
         void SelectEngine(int selectedEngine)
         {
-            debug.Log("USEngineSwitch.SelectEngine, selectedEngine: " + selectedEngine);
             if (selectedEngine < 0)
             {
                 return;
@@ -170,6 +167,7 @@ namespace UniversalStorage2.SwitchModules
             for (int i1 = 0; i1 < base.part.Modules.Count; i1++)
             {
                 PartModule partModule = base.part.Modules[i1];
+
                 if (partModule is ModuleEnginesFX)
                 {
                     var tempEngine = (ModuleEnginesFX)partModule;
@@ -179,26 +177,28 @@ namespace UniversalStorage2.SwitchModules
                     if (index == selectedEngine)
                     {
                         if (HighLogic.LoadedSceneIsFlight)
-                            tempEngine.Activate();
-                        tempEngine.enabled = tempEngine.moduleIsEnabled = tempEngine.includeinDVCalcs = tempEngine.isEnabled = true;
+                            tempEngine.enabled = tempEngine.moduleIsEnabled = tempEngine.includeinDVCalcs = tempEngine.isEnabled = true;
+
                     }
-                   index++;
-                  continue;
+                    index++;
+
                 }
-                if (partModule is ModuleEngines)
+                else
                 {
-                    var tempEngine = (ModuleEngines)partModule;
-                    if (HighLogic.LoadedSceneIsFlight)
-                        tempEngine.Shutdown();
-                    tempEngine.enabled = tempEngine.moduleIsEnabled = tempEngine.includeinDVCalcs = tempEngine.isEnabled = false;
-                    if (index == selectedEngine)
+                    if (partModule is ModuleEngines)
                     {
+                        var tempEngine = (ModuleEngines)partModule;
                         if (HighLogic.LoadedSceneIsFlight)
-                            tempEngine.Activate();
-                        tempEngine.enabled = tempEngine.moduleIsEnabled = tempEngine.includeinDVCalcs = tempEngine.isEnabled = true;
+                            tempEngine.Shutdown();
+                        tempEngine.enabled = tempEngine.moduleIsEnabled = tempEngine.includeinDVCalcs = tempEngine.isEnabled = false;
+                        if (index == selectedEngine)
+                        {
+                            if (HighLogic.LoadedSceneIsFlight)
+                                tempEngine.enabled = tempEngine.moduleIsEnabled = tempEngine.includeinDVCalcs = tempEngine.isEnabled = true;
+                        }
+                        index++;
                     }
-                 index++;
-               }
+                }
             }
         }
 
@@ -217,7 +217,7 @@ namespace UniversalStorage2.SwitchModules
             float cost = 0;
 
 
-            float newCost =  meshCost;
+            float newCost = meshCost;
 
             return newCost;
         }
