@@ -157,5 +157,10 @@
 	Fixed the Data Input Terminal to deploy keyboard before collecting data
 	Fixed the engines in the Advanced MicroSat, they now work properly and do not start being enabled and active at launch from the editor
 
+4.0.3 (unreleased)
+	Thanks to github user @BalaurGD for this:
+		Added russian translation
+	Fixed scaling for USHexcore
+
 TODO
 	Update all language files for missing fields

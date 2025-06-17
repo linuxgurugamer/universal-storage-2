@@ -9,7 +9,7 @@ rem    but not always
 
 set H=%KSPDIR%
 
-set H=R:\KSP_1.12.5-US2-2
+set H=R:\KSP_1.12.5-US2
 
 set GAMEDIR=UniversalStorage2
 set GAMEDATA="GameData"
