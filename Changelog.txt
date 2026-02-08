@@ -162,6 +162,7 @@
 		Added russian translation
 	Fixed scaling for USHexcore
 	Reformatted all part files
+	Added config made by forum user @Friznit for Snacks Air
 
 TODO
 	Update all language files for missing fields
