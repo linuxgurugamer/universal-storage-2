@@ -164,5 +164,9 @@
 	Reformatted all part files
 	Added config made by forum user @Friznit for Snacks Air
 
+4.0.4
+	Increased the EC storage in the basic microsat to 45 EC
+	Increased the EC storage in the advanced microsat to 100 EC
+
 TODO
 	Update all language files for missing fields
